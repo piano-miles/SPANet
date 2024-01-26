@@ -9,24 +9,24 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.eggs/
+.installed.cfg
 .Python
+*.egg
+*.egg-info/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
 lib/
 lib64/
+MANIFEST
 parts/
 sdist/
+share/python-wheels/
 var/
 wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -39,19 +39,19 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
+.cache
 .coverage
 .coverage.*
-.cache
-nosetests.xml
-coverage.xml
+.hypothesis/
+.nox/
+.pytest_cache/
+.tox/
 *.cover
 *.py,cover
-.hypothesis/
-.pytest_cache/
 cover/
+coverage.xml
+htmlcov/
+nosetests.xml
 
 # Translations
 *.mo
@@ -59,9 +59,9 @@ cover/
 
 # Django stuff:
 *.log
-local_settings.py
 db.sqlite3
 db.sqlite3-journal
+local_settings.py
 
 # Flask stuff:
 instance/
@@ -109,11 +109,11 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
-venv/
-ENV/
 env.bak/
+env/
+ENV/
 venv.bak/
+venv/
 
 # Spyder project settings
 .spyderproject
@@ -144,23 +144,24 @@ cython_debug/
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/workspace.xml
+.vscode
 
 # Generated files
 .idea/**/contentModel.xml
 
 # Sensitive or high-churn files
-.idea/**/dataSources/
 .idea/**/dataSources.ids
 .idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
+.idea/**/dataSources/
 .idea/**/dbnavigator.xml
+.idea/**/dynamic.xml
+.idea/**/sqlDataSources.xml
+.idea/**/uiDesigner.xml
 
 # Gradle
 .idea/**/gradle.xml
