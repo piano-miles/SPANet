@@ -57,7 +57,7 @@ def main(
     options = Options(event_file, training_file, validation_file)
 
     if options_file is not None:
-        with open(options_file, "r") as json_file:
+        with open(options_file, "r", encoding="utf-8") as json_file:
             options.update_options(json.load(json_file))
 
     # -------------------------------------------------------------------------------------------------------
@@ -65,11 +65,11 @@ def main(
     # -------------------------------------------------------------------------------------------------------
     options.verbose_output = verbose
     if master and verbose:
-        print(f"Verbose output activated.")
+        print("Verbose output activated.")
 
     if full_events:
         if master:
-            print(f"Overriding: Only using full events")
+            print("Overriding: Only using full events")
         options.partial_events = False
         options.balance_particles = False
 
@@ -173,7 +173,9 @@ def main(
         print(f"Training Version {trainer.logger.version}")
         makedirs(trainer.logger.log_dir, exist_ok=True)
 
-        with open(f"{trainer.logger.log_dir}/options.json", "w") as json_file:
+        with open(
+            f"{trainer.logger.log_dir}/options.json", "w", encoding="utf-8"
+        ) as json_file:
             json.dump(options.__dict__, json_file, indent=4)
 
         shutil.copy2(options.event_info_file, f"{trainer.logger.log_dir}/event.yaml")
