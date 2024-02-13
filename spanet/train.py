@@ -1,25 +1,24 @@
-from argparse import ArgumentParser
-from typing import Optional
-from os import getcwd, makedirs, environ
-import shutil
 import json
+import shutil
+from argparse import ArgumentParser
+from os import environ, getcwd, makedirs
+from typing import Optional
 
-import torch
 import pytorch_lightning as pl
-from pytorch_lightning.profilers import PyTorchProfiler
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks.progress.rich_progress import _RICH_AVAILABLE
-from pytorch_lightning.loggers.wandb import _WANDB_AVAILABLE, WandbLogger
-
+import torch
 from pytorch_lightning.callbacks import (
+    DeviceStatsMonitor,
     LearningRateMonitor,
     ModelCheckpoint,
-    RichProgressBar,
-    RichModelSummary,
-    DeviceStatsMonitor,
     ModelSummary,
+    RichModelSummary,
+    RichProgressBar,
     TQDMProgressBar,
 )
+from pytorch_lightning.callbacks.progress.rich_progress import _RICH_AVAILABLE
+from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers.wandb import _WANDB_AVAILABLE, WandbLogger
+from pytorch_lightning.profilers import PyTorchProfiler
 
 from spanet import JetReconstructionModel, Options
 
