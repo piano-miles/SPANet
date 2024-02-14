@@ -247,5 +247,7 @@ ipython_config.py
 *_output/
 environment/
 
-# data
+# data and output
+*.h5
+*.zip
 data
