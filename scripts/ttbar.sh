@@ -14,7 +14,7 @@ fi
 
 # Create a new environment
 echo "Creating environment..."
-conda env create -p ./environment --file environment.yaml
+conda env create -p ./environment --file environment_cuda118.yaml
 conda activate ./environment && (
     echo "Environment created and activated."
     echo ""
