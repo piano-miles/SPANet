@@ -250,4 +250,4 @@ environment/
 # data and output
 *.h5
 *.zip
-data
+data/*.h5
