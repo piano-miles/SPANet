@@ -1,6 +1,6 @@
 {
-    "hidden_dim": 16,
-    "transformer_dim": 64,
+    "hidden_dim": 128,
+    "transformer_dim_scale": 2.0,
     "initial_embedding_dim": 16,
     "position_embedding_dim": 32,
 
@@ -30,7 +30,7 @@
     "skip_connections": true,
     "initial_embedding_skip_connections": true,
     "event_info_file": "./event_files/wprime.yaml",
-    "training_file": "./data/wprime/wprime_1000.h5",
+    "training_file": "./data/wprime/wprime_full_A.h5",
 
     "normalize_features": true,
     "limit_to_num_jets": 0,
