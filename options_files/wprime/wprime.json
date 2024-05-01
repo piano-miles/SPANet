@@ -1,6 +1,6 @@
 {
-    "hidden_dim": 128,
-    "transformer_dim_scale": 2.0,
+    "hidden_dim": 16,
+    "transformer_dim": 64,
     "initial_embedding_dim": 16,
     "position_embedding_dim": 32,
 
