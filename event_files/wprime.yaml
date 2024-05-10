@@ -7,11 +7,11 @@ INPUTS:
   # -----------------------------------------------------------------------------
   SEQUENTIAL:
     Source:
-      mass: log_normalize
-      pt: log_normalize
+      btag: none
+      energy: log_normalize
       eta: normalize
       phi: normalize
-      btag: none
+      pt: log_normalize
 
   # ---------------------------------------------------------------------
   # REQUIRED - GLOBAL - inputs which will have a single vector per event.
@@ -23,9 +23,9 @@ INPUTS:
 # ----------------------------------------------------------------------
 EVENT:
   t:
+    - b1
     - q1
     - q2
-    - b1
   b:
     - b2
 
