@@ -251,3 +251,6 @@ environment/
 *.h5
 *.zip
 data/*.h5
+
+# macOS
+.DS_STORE
