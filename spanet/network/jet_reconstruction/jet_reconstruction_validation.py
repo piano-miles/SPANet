@@ -86,18 +86,13 @@ class JetReconstructionValidation(JetReconstructionNetwork):
                 ).mean()
                 for j in range(1, num_targets + 1)
                 for i in range(1, j + 1)
+            } | {
+                f"particle/accuracy_{i}_of_{j}": (
+                    particle_accuracies[num_particles == j] >= i
+                ).mean()
+                for j in range(1, num_targets + 1)
+                for i in range(1, j + 1)
             }
-
-            metrics.update(
-                {
-                    f"particle/accuracy_{i}_of_{j}": (
-                        particle_accuracies[num_particles == j] >= i
-                    ).mean()
-                    for j in range(1, num_targets + 1)
-                    for i in range(1, j + 1)
-                }
-            )
-
         particle_scores = particle_scores.ravel()
         particle_targets = permuted_masks.ravel()
         particle_predictions = particle_predictions.ravel()
@@ -167,7 +162,9 @@ class JetReconstructionValidation(JetReconstructionNetwork):
 
             percent_error = np.abs(delta / regression_targets[key])
             self.log(
-                f"REGRESSION/{key}_percent_error", percent_error.mean(), sync_dist=True
+                f"REGRESSION/{key}_percent_error",
+                percent_error.mean(),
+                sync_dist=True,
             )
 
             absolute_error = np.abs(delta)
