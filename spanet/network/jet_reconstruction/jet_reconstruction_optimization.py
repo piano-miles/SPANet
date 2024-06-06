@@ -3,10 +3,18 @@ from typing import Tuple, List
 import numpy as np
 import torch
 from torch import Tensor
-from torch.autograd.functional import _construct_standard_basis_for, _autograd_grad, _grad_postprocess, \
-    _tuple_postprocess, _as_tuple, _check_requires_grad
+from torch.autograd.functional import (
+    _construct_standard_basis_for,
+    _autograd_grad,
+    _grad_postprocess,
+    _tuple_postprocess,
+    _as_tuple,
+    _check_requires_grad,
+)
 
-from spanet.network.jet_reconstruction.jet_reconstruction_network import JetReconstructionNetwork
+from spanet.network.jet_reconstruction.jet_reconstruction_network import (
+    JetReconstructionNetwork,
+)
 from spanet.options import Options
 
 
@@ -15,19 +23,29 @@ class JetReconstructionOptimization(JetReconstructionNetwork):
         super(JetReconstructionOptimization, self).__init__(options, torch_script)
 
         self.num_losses = (
-            (self.options.assignment_loss_scale > 0) * len(self.training_dataset.assignments) +
-            (self.options.detection_loss_scale > 0) * len(self.training_dataset.assignments) +
-            (self.options.regression_loss_scale > 0) * len(self.training_dataset.regressions) +
-            (self.options.classification_loss_scale > 0) * len(self.training_dataset.classifications) +
-            (self.options.kl_loss_scale > 0)
+            (self.options.assignment_loss_scale > 0)
+            * len(self.training_dataset.assignments)
+            + (self.options.detection_loss_scale > 0)
+            * len(self.training_dataset.assignments)
+            + (self.options.regression_loss_scale > 0)
+            * len(self.training_dataset.regressions)
+            + (self.options.classification_loss_scale > 0)
+            * len(self.training_dataset.classifications)
+            + (self.options.kl_loss_scale > 0)
         )
 
-        self.loss_weight_logits = torch.nn.Parameter(torch.zeros(self.num_losses), requires_grad=True)
+        self.loss_weight_logits = torch.nn.Parameter(
+            torch.zeros(self.num_losses), requires_grad=True
+        )
         self.loss_weight_alpha = 0.0
 
     @staticmethod
-    def jacobian_script(outputs: Tensor, inputs: Tuple[Tensor], create_graph: bool = False):
-        is_outputs_tuple, outputs = _as_tuple(outputs, "outputs of the user-provided function", "jacobian")
+    def jacobian_script(
+        outputs: Tensor, inputs: Tuple[Tensor], create_graph: bool = False
+    ):
+        is_outputs_tuple, outputs = _as_tuple(
+            outputs, "outputs of the user-provided function", "jacobian"
+        )
         _check_requires_grad(outputs, "outputs", strict=False)
 
         output_numels = tuple(output.numel() for output in outputs)
@@ -36,11 +54,20 @@ class JetReconstructionOptimization(JetReconstructionNetwork):
 
         def vjp(grad_output):
             vj = list(
-                _autograd_grad(flat_outputs, inputs, grad_output, create_graph=create_graph, is_grads_batched=True))
+                _autograd_grad(
+                    flat_outputs,
+                    inputs,
+                    grad_output,
+                    create_graph=create_graph,
+                    is_grads_batched=True,
+                )
+            )
             for el_idx, vj_el in enumerate(vj):
                 if vj_el is not None:
                     continue
-                vj[el_idx] = torch.zeros_like(inputs[el_idx]).expand((sum(output_numels),) + inputs[el_idx].shape)
+                vj[el_idx] = torch.zeros_like(inputs[el_idx]).expand(
+                    (sum(output_numels),) + inputs[el_idx].shape
+                )
             return tuple(vj)
 
         jacobians_of_flat_output = vjp(grad_outputs)
@@ -58,8 +85,15 @@ class JetReconstructionOptimization(JetReconstructionNetwork):
         return _tuple_postprocess(jacobian_output_input, (is_outputs_tuple, True))
 
     @staticmethod
-    def jacobian_loop(outputs: Tensor, inputs: Tuple[Tensor], create_graph: bool = False, strict: bool = False):
-        is_outputs_tuple, outputs = _as_tuple(outputs, "outputs of the user-provided function", "jacobian")
+    def jacobian_loop(
+        outputs: Tensor,
+        inputs: Tuple[Tensor],
+        create_graph: bool = False,
+        strict: bool = False,
+    ):
+        is_outputs_tuple, outputs = _as_tuple(
+            outputs, "outputs of the user-provided function", "jacobian"
+        )
         _check_requires_grad(outputs, "outputs", strict=strict)
 
         jacobian: Tuple[torch.Tensor, ...] = tuple()
@@ -67,27 +101,35 @@ class JetReconstructionOptimization(JetReconstructionNetwork):
             jac_i: Tuple[List[torch.Tensor]] = tuple([] for _ in range(len(inputs)))
 
             for j in range(out.nelement()):
-                vj = _autograd_grad((out.reshape(-1)[j],), inputs, retain_graph=True, create_graph=create_graph)
+                vj = _autograd_grad(
+                    (out.reshape(-1)[j],),
+                    inputs,
+                    retain_graph=True,
+                    create_graph=create_graph,
+                )
 
-                for el_idx, (jac_i_el, vj_el, inp_el) in enumerate(zip(jac_i, vj, inputs)):
+                for el_idx, (jac_i_el, vj_el, inp_el) in enumerate(
+                    zip(jac_i, vj, inputs)
+                ):
                     if vj_el is not None:
                         if strict and create_graph and not vj_el.requires_grad:
-                            msg = ("The jacobian of the user-provided function is "
-                                   "independent of input {}. This is not allowed in "
-                                   "strict mode when create_graph=True.".format(i))
+                            msg = f"The jacobian of the user-provided function is independent of input {i}. This is not allowed in strict mode when create_graph=True."
                             raise RuntimeError(msg)
                         jac_i_el.append(vj_el)
                     else:
                         if strict:
-                            msg = ("Output {} of the user-provided function is "
-                                   "independent of input {}. This is not allowed in "
-                                   "strict mode.".format(i, el_idx))
+                            msg = f"Output {i} of the user-provided function is independent of input {el_idx}. This is not allowed in strict mode."
                             raise RuntimeError(msg)
                         jac_i_el.append(torch.zeros_like(inp_el))
 
-            jacobian += (tuple(torch.stack(jac_i_el, dim=0).view(out.size()
-                                                                 + inputs[el_idx].size()) for (el_idx, jac_i_el) in
-                               enumerate(jac_i)),)
+            jacobian += (
+                tuple(
+                    torch.stack(jac_i_el, dim=0).view(
+                        out.size() + inputs[el_idx].size()
+                    )
+                    for (el_idx, jac_i_el) in enumerate(jac_i)
+                ),
+            )
 
         jacobian = _grad_postprocess(jacobian, create_graph)
 
@@ -109,7 +151,7 @@ class JetReconstructionOptimization(JetReconstructionNetwork):
         GW = []
 
         for parameter, jacobian in zip(parameters, jacobians):
-            weights = free_weights.reshape((-1, ) + (1,) * (jacobian.ndim - 1))
+            weights = free_weights.reshape((-1,) + (1,) * (jacobian.ndim - 1))
             parameter.grad = (weights * jacobian).sum(0)
             GW.append(jacobian.view(self.num_losses, -1))
 
@@ -121,7 +163,9 @@ class JetReconstructionOptimization(JetReconstructionNetwork):
 
         r = (loss.detach() / loss.detach().mean()) ** self.loss_weight_alpha
         L_grad = torch.abs((GW - GW_bar * r)).sum()
-        self.loss_weight_logits.grad, = torch.autograd.grad(L_grad, self.loss_weight_logits)
+        (self.loss_weight_logits.grad,) = torch.autograd.grad(
+            L_grad, self.loss_weight_logits
+        )
 
         for i, a in enumerate(free_weights):
             self.log(f"weights/{i}", a)
