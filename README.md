@@ -157,7 +157,7 @@ The ONNX model expects two inputs for every `INPUT` defined in the event file. R
 | {classification_target_1}                  | (B, C)         | float |
 | {classification_target_2}                  | (B, C)         | float |
 
-The ONNX model may produce any of the valid output heads. Each event partile defined produces an assignment distribution for its reconstruction. This distribution with be a singlet/doublet/triplet/etc. joint distribution depending on the number of decay products defined for each particle. The shape will reflect this number of products. For example, if a particle has two decay products, then its `assignment_log_probability` will have a shape of `(B, N, N)`. Each particle also has associated with it a `detection probability` which indicates how likely the particle is to be reconstructible.
+The ONNX model may produce any of the valid output heads. Each event particle defined produces an assignment distribution for its reconstruction. This distribution with be a singlet/doublet/triplet/etc. joint distribution depending on the number of decay products defined for each particle. The shape will reflect this number of products. For example, if a particle has two decay products, then its `assignment_log_probability` will have a shape of `(B, N, N)`. Each particle also has associated with it a `detection probability` which indicates how likely the particle is to be reconstructible.
 
 The additional outputs will only be present if you define any `REGRESSION` or `CLASSIFICATION` outputs in the event file. Each of the definitions will be add an extra output. The regression outputs simply contain the predicted value for each regression target. The classification outputs contain a distribution over possible classes for each target.
 
