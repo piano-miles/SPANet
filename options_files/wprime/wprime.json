@@ -1,5 +1,5 @@
 {
-  "hidden_dim": 16,
+  "hidden_dim": 64,
   "transformer_dim": 64,
   "initial_embedding_dim": 16,
   "position_embedding_dim": 32,
@@ -53,7 +53,7 @@
   "learning_rate_warmup_epochs": 1.0,
 
   "assignment_loss_scale": 1.0,
-  "detection_loss_scale": 0.0,
+  "detection_loss_scale": 1.0,
   "kl_loss_scale": 0.0,
   "regression_loss_scale": 0.0,
   "classification_loss_scale": 0.0,
