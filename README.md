@@ -31,7 +31,7 @@ Alternatively, you can use `pip install -e .` to install in an editable mode.
 
 The configuration `ini` has been deprecated into a configuration `yaml`. The conversion should just be to change the syntax a bit, the values should remain the same. A conversion script is in the works.
 
-The dataset format has also changed slightly, but old style datasets can be converted into a new style dataset using [`utils/convert_dataset.py`](utils/convert_dataset.py).
+The dataset format has also changed slightly, but old-style datasets can be converted into new-style datasets using [`utils/convert_dataset.py`](utils/convert_dataset.py).
 
 The old codebase may always be accessed here: [https://github.com/Alexanders101/SPANet/tree/v1.0](https://github.com/Alexanders101/SPANet/tree/v1.0)
 
@@ -52,7 +52,7 @@ These are only the minimum versions that we tested, other versions might work.
 | [h5py](https://pypi.org/project/h5py/)                | 2.10            |
 | [numba](https://numba.pydata.org/)                    | 0.56            |
 
-We have updated to using an anaconda environment for simpler dependency management.
+We have updated to use an anaconda environment for simpler dependency management.
 You can create the environment locally with the following conda / mamba commands:
 
 ```bash
@@ -98,7 +98,7 @@ where `NUM_GPUS` is the number of gpus available on your machine.
 
 Once training is complete, you may evaluate a network on
 a testing dataset by running `spanet.test` with a path to your previously
-trained network and a file on which to evaluate on.
+trained network and a file on which to evaluate.
 
 For example, after running the previous training run on `ttbar_example`,
 you can evaluate the network again on the example dataset by running.
