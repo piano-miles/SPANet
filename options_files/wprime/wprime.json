@@ -42,7 +42,7 @@
   "dataset_limit": 1.0,
   "train_validation_split": 0.9,
   "batch_size": 512,
-  "num_dataloader_workers": 16,
+  "num_dataloader_workers": 40,
 
   "mask_sequence_vectors": true,
   "combine_pair_loss": "min",
