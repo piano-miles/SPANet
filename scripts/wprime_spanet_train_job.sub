@@ -4,7 +4,7 @@
 #SBATCH -A daniel_lab_gpu
 #SBATCH -p gpu
 #SBATCH --nodes=1
-#SBATCH --time=35:00:00
+#SBATCH --time=40:00:00
 #SBATCH --gres=gpu:A100:1
 #SBATCH --ntasks=1
 #SBATCH --error=slurm-%J.err
@@ -12,9 +12,15 @@
 
 exec > >(tee -i wp_spanet.log) 2>&1
 
-module load miniconda3/4.12.0 && (
-    python --version
-    pip list
-)
-cd ~/SPANet/SPANet && conda activate ./environment
-python -m spanet.train -of options_files/wprime/wprime.json --time_limit 00:35:00:00 --gpus 1 && echo "Training successfully completed." || echo "Training failed."
+echo "Loading miniconda"
+module load miniconda3/4.12.0
+python --version
+
+echo "Activating environment"
+source /opt/apps/miniconda3/4.12.0/etc/profile.d/conda.sh
+cd ~/SPANet/SPANet
+conda activate ./environment
+pip list
+
+echo "Training"
+python -m spanet.train -of options_files/wprime/wprime.json --time_limit 00:40:00:00 --gpus 1 && echo "Training successfully completed." || echo "Training failed."
