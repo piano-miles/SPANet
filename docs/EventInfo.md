@@ -2,7 +2,7 @@
 
 The first step to training SPANets is to define the topology of your target event. To do this, `SPANet`uses a definition `.yaml` file which contains the features and jet information for your event. This will describe both the inputs and outputs for your model, along with any related symmetries.
 
-The structure of the `.yaml` file will follows a standard format. Special keys which must be exactly as shown will be in `CAPITALCASE`. Custom keys which may modified for your event will be in `lower_case_with_underscores`
+The structure of the `.yaml` file will follow a standard format. Special keys that must be exactly as shown will be in `CAPITALCASE`. Custom keys which may be modified for your event will be in `lower_case_with_underscores`.
 
 ```yaml
 INPUTS:
@@ -68,18 +68,17 @@ in [`ttbar.yaml`](../event_files/full_hadronic_ttbar.yaml).
 
 ## `INPUTS`
 
-The first **reuquired** section. Inputs will contain a description of the features that will be fed in as input to SPANet. Each input should have a unique name. They will later be used in how you define your dataset. The exact names are not important
-as long as they are unique.
+The first **required** section. Inputs will contain a description of the features that will be fed in as input to SPANet. Each input should have a unique name. They will later be used in how you define your dataset. The exact names are not important as long as they are unique.
 
 There are two types of inputs:
 
 - **SEQUENTIAL** inputs represent variable length inputs for each event.
   These may include objects such as hadronic jets, leptons, neutrinos, etc. We require that the event contains at least one sequential input. These inputs will also define the potential reconstruction targets.
-- **GLOBAL** inputs represent features which exist for the entire event.
+- **GLOBAL** inputs represent features that exist for the entire event.
   There exists only a single instance of the inputs for every event.
   Examples include neutrino missing energy.
 
-Each input contains one or more *features*. These are the observable values associated with each input. Each feature is also given a unique name which will be used when creating the dataset. Each feature can have association several options which define how `SPANet` will pre-process the feature. Valid options include:
+Each input contains one or more *features*. These are the observable values associated with each input. Each feature is also given a unique name which will be used when creating the dataset. Each feature can have association several options that define how `SPANet` will pre-process the feature. Valid options include:
 
 | FEATURE_OPTION     | Description |
 | :--------------:   | ----------- |
@@ -92,14 +91,14 @@ Each input contains one or more *features*. These are the observable values asso
 
 The second **required** section. This will contain a simplified Feynman diagram of your event. We require that events processed by SPANet follow a particular two-level structure. We split the event into
 
-1. **Event Particles:** The first level of the Feynmen Diagram. These are typically non-observable particles which we are interested in studying. These particles are required to decay into other particles.
-2. **Decay Products:** The second level will contain observable decay products. These are required to be particles which will have reconstruction targets associated with them. Decay products may correspond to a specific sequential input. You can define the correspondence by adding the name of the sequential input after the decay product `decay_product: sequential_input`.
+1. **Event Particles:** The first level of the Feynman Diagram. These are typically non-observable particles that we are interested in studying. These particles are required to decay into other particles.
+2. **Decay Products:** The second level will contain observable decay products. These are required to be particles that will have reconstruction targets associated with them. Decay products may correspond to a specific sequential input. You can define the correspondence by adding the name of the sequential input after the decay product `decay_product: sequential_input`.
 
-We describe this Feynman diagram structure with a simple two layer tree. Give each event particle a unique name. Decay particles may repeat names as long as they belong to different event particles.
+We describe this Feynman diagram structure with a simple two-layer tree. Give each event particle a unique name. Decay particles may repeat names as long as they belong to different event particles.
 
 ## `PERMUTATIONS`
 
-Describe the symmetries allowed in during assignment. You may specify an event-level symmetry group over event particles with the special keyword.
+Describe the symmetries allowed during assignment. You may specify an event-level symmetry group over event particles with the special keyword.
 
 ```yaml
 EVENT:
@@ -107,7 +106,7 @@ EVENT:
     ...
 ```
 
-Decay product symmetry groups may be specicied with their associated event particle name.
+Decay product symmetry groups may be specified with their associated event particle name.
 
 ```yaml
 event_particle_1:
@@ -115,11 +114,11 @@ event_particle_1:
     ...
 ```
 
-SPANet supports describing permutation groups as products of complete symmetry goups G = S_1 x S_2 x ... or using an explicit collection of generating cycles.
+SPANet supports describing permutation groups as products of complete symmetry groups $G = S_1 \times  S_2 \times \cdots$ or using an explicit collection of generating cycles.
 
 ### Complete Symmetric Groups
 
-In order to define symmetric permutation groups, you simply describe which particles or jets belong to each of the fully symmetric groups. This is expressed as a list of lists each of which contain the names of the connected particles or jets
+In order to define symmetric permutation groups, you simply describe which particles or jets belong to each of the fully symmetric groups. This is expressed as a list of lists, each of which contains the names of the connected particles or jets.
 
 For example
 
@@ -133,7 +132,7 @@ will define an event symmetric group where the first two particles are interchan
 
 Any groupings of three or more particles will mean that **ALL** of the particles are symmetric with each other. Any elements not present in the permutations description will be assumed to be invariant with only itself.
 
-For example, using the same four particles as above ` [event_particle_1, event_particle_2, event_particle_3] ` defines a group with the first three particles are completely invariant with respect to each other but the final particle `event_particle_4` is invariant with nothing.
+For example, using the same four particles as above ` [event_particle_1, event_particle_2, event_particle_3] ` defines a group where the first three particles are completely invariant with respect to each other but the final particle `event_particle_4` is invariant with nothing.
 
 ### Explicit Permutation groups
 
@@ -158,7 +157,7 @@ Where the two pairs may be swapped independently of each other.
 
 ## `REGRESSIONS` & `CLASSIFICATIONS`
 
-These sections define the additional regression and classification targets associated to any part of the event tree. These are optional and may be left out if you do not wish to train a model to perform these tasks. These two sections have identical structure. We will use `REGRESSIONS` for these descriptions.
+These sections define the additional regression and classification targets associated with any part of the event tree. These are optional and may be left out if you do not wish to train a model to perform these tasks. These two sections have identical structures. We will use `REGRESSIONS` for these descriptions.
 
 ```yaml
 REGRESSIONS:
@@ -179,7 +178,7 @@ REGRESSIONS:
     ...
 ```
 
-You may add additional regression targets to any point in the Feynman diagram. The `EVENT` targets will be defined for the entire event and can include things such as system invariant mass. You can also add regression targets to individual event particles with the special `PARTICLE` tag. Finally, you can add regression targets to each individual decay products within each event particle. Any symmetric event particles or decay products must define the same regression targets.
+You may add additional regression targets to any point in the Feynman diagram. The `EVENT` targets will be defined for the entire event and can include things such as system invariant mass. You can also add regression targets to individual event particles with the special `PARTICLE` tag. Finally, you can add regression targets to each individual decay product within each event particle. Any symmetric event particles or decay products must define the same regression targets.
 
 **This feature is currently considered a work in progress and may not be fully compatible with the symmetric structures defined above. Only the `EVENT` regression and classifications are currently fully supported.**
 
