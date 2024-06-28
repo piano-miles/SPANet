@@ -2,7 +2,7 @@
 
 ## Environment
 
-We include an [anaconda environment](./environment.yml) file which can be used to install the required dependencies. You can get the anaconda package manager at [this link](https://www.anaconda.com/products/distribution). Alternatively, you can use the [mamba package manager](https://mamba.readthedocs.io/en/latest/installation.html). The environment can be installed with the following command:
+We include an [Anaconda environment](./environment.yml) file which can be used to install the required dependencies. You can get the Anaconda package manager at [this link](https://www.anaconda.com/products/distribution). Alternatively, you can use the [Mamba package manager](https://mamba.readthedocs.io/en/latest/installation.html). The environment can be installed with the following command:
 
 ```bash
 conda env create -p ./environment --file environment.yaml
@@ -17,7 +17,7 @@ Either run `pip install .` or, for an editable install, `pip install -e .` from 
 
 ## Full Training Data
 
-Included in the repository are all files necessary to quickly test SPANets on `ttbar` events. This repository only contains a tiny example dataset for a sanity check, but you may acquire a larger training and testing data set [here](http://mlphysics.ics.uci.edu/data/2021_ttbar/). As of 2022/10/20, this dataset is still in the old style to ensure backwards compatibility. You may run the following commands to download and convert the dataset (In the SPANet root directory).
+Included in the repository are all files necessary to quickly test SPANets on `ttbar` events. This repository only contains a tiny example dataset for a sanity check, but you may acquire a larger training and testing data set [here](http://mlphysics.ics.uci.edu/data/2021_ttbar/). As of 2022/10/20, this dataset is still in the old style to ensure backward compatibility. You may run the following commands to download and convert the dataset (In the SPANet root directory).
 
 ```bash
 wget -O ./data/full_hadronic_ttbar/training.h5 http://mlphysics.ics.uci.edu/data/2021_ttbar/ttbar_training.h5
@@ -33,7 +33,7 @@ python utils/convert_dataset.py ./data/full_hadronic_ttbar/testing.h5 ./data/ful
 
 ## Training
 
-You can train a new SPANet on the ttbar dataset by running `train.py`. Specifying `NUM_GPUS` will determine how many parallel GPUs the training process will use during training. You can set `NUM_GPUS` to be 0 to disable GPU training and only use the CPU. Make sure to continue the training until at least one epoch has finished so that it creates a checkpoint file. Note that when using the full dataset, a complete training run takes roughly 4 hours on a single GPU.
+You can train a new SPANet on the ttbar dataset by running `train.py`. Specifying `NUM_GPUS` will determine how many parallel GPUs the training process will use during training. You can set `NUM_GPUS` to 0 to disable GPU training and only use the CPU. Make sure to continue the training until at least one epoch has finished so that it creates a checkpoint file. Note that when using the full dataset, a complete training run takes roughly 4 hours on a single GPU.
 
 ```bash
 # Example Dataset
@@ -71,7 +71,7 @@ python -m spanet.test ./spanet_output/version_0 -tf data/full_hadronic_ttbar/exa
 python -m spanet.test ./spanet_output/version_0 -tf data/full_hadronic_ttbar/testing.h5 --gpu
 ```
 
-Next we will output all SPANet predictions on a set of events in order to analyze them further, simply run `predict.py` as follows.
+Next, we will output all SPANet predictions on a set of events in order to analyze them further, simply run `predict.py` as follows.
 
 ```bash
 # Example Dataset
@@ -168,7 +168,7 @@ This is the information that we store for each jet. Also notice that we `log_nor
 
 ### `EVENT`
 
-This section defines that Feynman diagram structure of our event. We have two **event particles** which we are interested in `t1` and `t2`. Each top quark / anti-quark decay into three jets: two light quarks `q1` and `q2` and a bottom quark `b`. These final jets are observable and so they belong in the second stage of diagram. We currently only support depth two Feynman diagrams. The first stage should be the particles we are interested in studying, and the second the observable decay products.
+This section defines the Feynman diagram structure of our event. We have two **event particles** which we are interested in `t1` and `t2`. Each top quark / anti-quark decay into three jets: two light quarks `q1` and `q2` and a bottom quark `b`. These final jets are observable and so they belong in the second stage of the diagram. We currently only support depth two Feynman diagrams. The first stage should be the particles we are interested in studying, and the second the observable decay products.
 
 ### `PERMUTATIONS`
 
@@ -182,7 +182,7 @@ This section allows us to define custom per-event, per-particle, and per-decay p
 
 ## `ttbar` Example Dataset
 
-We provide in this repository a small example file which contains ~10,000 `ttbar` events to demonstrate the dataset structure. This file is located in `data/full_hadronic_ttbar/example.h5`.
+We provide in this repository a small example file that contains ~10,000 `ttbar` events to demonstrate the dataset structure. This file is located in `data/full_hadronic_ttbar/example.h5`.
 
 You can example HDF5 file structure with the following command: ``
 
@@ -216,4 +216,4 @@ You will notice that all the source feature names, the event particle names, and
 
 The example dataset contains `10,000` `ttbar` events with a maximum jet multiplicity of `10`. The source features are float arrays of size `[10,000, 10]` because each jet has every feature assigned to it. Not every event has all `10` jets, so any extra jets assigned to an event are known as padding and all have feature values of 0. The `INPUTS/Source/MASK` array keeps track of which jets are real and which are padding jets.
 
-The particle groups contain the indices of each jet associated with each particle. Each array in these groups is an integer array of size `[10,000]`. Any jets which are missing from the event are marked with a `-1` value in the corresponding target array.
+The particle groups contain the indices of each jet associated with each particle. Each array in these groups is an integer array of size `[10,000]`. Any jets that are missing from the event are marked with a `-1` value in the corresponding target array.
