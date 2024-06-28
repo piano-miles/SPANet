@@ -184,7 +184,7 @@ This section allows us to define custom per-event, per-particle, and per-decay p
 
 We provide in this repository a small example file that contains ~10,000 `ttbar` events to demonstrate the dataset structure. This file is located in `data/full_hadronic_ttbar/example.h5`.
 
-You can example HDF5 file structure with the following command: ``
+You can example HDF5 file structure with the following command:
 
 ```bash
 $ python utils/examine_hdf5.py data/full_hadronic_ttbar/example.h5 --shape
