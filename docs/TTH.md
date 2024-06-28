@@ -1,6 +1,6 @@
 # Semi-Leptonic `ttH` Example Guide
 
-Semi-leptonic `ttH` presents an opportunity to display a more complicated event topology, with multiple types of inputs and outputs. This is guide builds upon the `ttbar` example by displaying some more complex features.
+Semi-leptonic `ttH` presents an opportunity to display a more complicated event topology, with multiple types of inputs and outputs. This guide builds upon the `ttbar` example by displaying some more complex features.
 
 ## Event `.yaml` File
 
@@ -61,7 +61,8 @@ CLASSIFICATIONS:
 ```
 
 ### Global MET
-Notice that we now have several additional sections when compared to `ttbar`. We define a new input which will keep track of the missing neutrino energy. This behaves similarly to our sequential inputs, except that there is exactly one value present for every event. This presents a way of adding extra event-level information that is not assigned to any particular jet or lepton. 
+
+Notice that we now have several additional sections when compared to `ttbar`. We define a new input that will keep track of the missing neutrino energy. This behaves similarly to our sequential inputs, except that there is exactly one value present for every event. This presents a way of adding extra event-level information that is not assigned to any particular jet or lepton.
 
 ```yaml
 GLOBAL:
@@ -72,6 +73,7 @@ GLOBAL:
 ```
 
 ### Neutrino Regression Reconstruction
+
 We additionally want to estimate some of the lost information about the neutrino which the detector was not able to capture. We extract these values from the simulator and store them. SPANet is able to include additional real-valued regression outputs to estimate these measurements.
 
 ```yaml
@@ -85,7 +87,9 @@ REGRESSIONS:
 ```
 
 ### Signal-Background Separation
+
 We additionally include some 4 bjet `ttbar` events as background to the `ttH` signal. We may train SPANet to distinguish between the signal and background events by including an additional classification output. Each of these outputs is a multi-class classification output, although in this case we only have two classes.
+
 ```yaml
 CLASSIFICATIONS:
   EVENT:
@@ -93,7 +97,9 @@ CLASSIFICATIONS:
 ```
 
 ## Combined Training
+
 If you specify multiple outputs for SPANet, then all of the outputs will be trained simultaneously. You can control the strength of each target using the following hyperparameters.
+
 ```json
 // From `options_files/semi_leptonic_ttH/example.json`
 "assignment_loss_scale": 1.0,
@@ -103,17 +109,19 @@ If you specify multiple outputs for SPANet, then all of the outputs will be trai
 "classification_loss_scale": 1.0,
 ```
 
-These will control the absolute weight assigned to every loss term in the total loss function. Note that masking out one of the losses for an event will still allow other objectives to be trained. For example, in our `ttH` example, notice that all of the background events lack a reconstruction target. Therefore, the reconstruction heads will ignore background events and the background will only be used to train the regression and classification outputs. Although note that we will still ignore these events and losses if `"partial_events": false` since this depends only on the reconstruction targets.
+These will control the absolute weight assigned to every loss term in the total loss function. Note that masking out one of the losses for an event will still allow other objectives to be trained. For example, in our `ttH` example, notice that all of the background events lack a reconstruction target. Therefore, the reconstruction heads will ignore background events and the background will only be used to train the regression and classification outputs. However, note that we will still ignore these events and losses if `"partial_events": false` since this depends only on the reconstruction targets.
 
 ## Dataset
-We mirror the structure defined in the event info file in the dataset. We include a small example datasets with the correct strcuture to assist in making your own complex events. The HDF5 structure for this dataset is copied below.
+
+We mirror the structure defined in the event info file in the dataset. We include small example datasets with the correct structure to assist in making your own complex events. The HDF5 structure for this dataset is copied below.
 
 Notice a couple of details:
+
 - `Met` inputs are one-dimensional compared to `Momenta` because we defined the MET to be a global variable in the event info. Note that we also don't need to include a `MASK` for the event variables.
-- `CLASSIFICATIONS` inputs are one-dimensional `int64` arrays which will define the class of every event. The total number of classes is inferred from this array. A value of `-1` may be used to indicate no class for a given event, although we do not have such instances in the example.
+- `CLASSIFICATIONS` inputs are one-dimensional `int64` arrays that will define the class of every event. The total number of classes is inferred from this array. A value of `-1` may be used to indicate no class for a given event, although we do not have such instances in the example.
 - `REGRESSIONS` inputs are simple one-dimensional `float32` arrays storing the regression target for every event. A value of float `NaN` may be used to indicate no value for the event, although we do not have such instances in the example.
 
-```
+```bash
 ============================================================
 | Structure for data/semi_leptonic_ttH/example.h5 
 ============================================================
