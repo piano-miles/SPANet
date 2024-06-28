@@ -254,3 +254,6 @@ data/*.h5
 
 # macOS
 .DS_STORE
+
+# scripts
+scripts/
