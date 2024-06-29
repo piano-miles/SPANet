@@ -107,7 +107,7 @@ def tune_spanet(
 ):
     # Load the search space.
     # This seems to be the best way to load arbitrary tune search spaces.
-    # Not great due to the dynamic eval but ray doesnt have a config spec for search spaces.
+    # Not great due to the dynamic eval but ray doesn't have a config spec for search spaces.
     config = DEFAULT_CONFIG
     if search_space_file is not None:
         with open(search_space_file, "r") as file:
