@@ -1,18 +1,15 @@
-import h5py
-
 from argparse import ArgumentParser
 
-from shared import structure_printer, read, write
+from h5py import File
+from shared import read, structure_printer, write
 
 
-def convert_dataset(dataset):
+def convert_dataset(dataset) -> dict:
     # Convert input features
     # ======================
     inputs = {
         "Source": {
-            key: value
-            for key, value in dataset["source"].items()
-            if key != "mask"
+            key: value for key, value in dataset["source"].items() if key != "mask"
         }
     }
 
@@ -30,47 +27,41 @@ def convert_dataset(dataset):
         if event_particle != "source"
     }
 
-    return {
-        "INPUTS": inputs,
-        "TARGETS": targets
-    }
+    return {"INPUTS": inputs, "TARGETS": targets}
 
 
-def main(input_filepath: str, output_filepath: str):
-    print()
-    print("=" * 40)
-    print("Input file structure")
-    print("=" * 40)
-    with h5py.File(input_filepath, 'r') as input_file:
+def main(input_filepath: str, output_filepath: str) -> None:
+    print_header("Input file structure")
+    with File(input_filepath, "r") as input_file:
         structure_printer(input_file)
         print("\n")
 
         dataset = read(input_file)
 
-    print()
-    print("=" * 40)
-    print("Converting Dataset")
-    print("=" * 40)
+    print_header("Converting Dataset")
     new_dataset = convert_dataset(dataset)
 
-    print()
-    print("=" * 40)
-    print("Creating output file")
-    print("=" * 40)
-    with h5py.File(output_filepath, 'w') as output_file:
+    print_header("Creating output file")
+    with File(output_filepath, "w") as output_file:
         write(new_dataset, output_file)
 
-    print()
-    print("=" * 40)
-    print("Output file structure")
-    print("=" * 40)
-    with h5py.File(output_filepath, 'r') as output_file:
+    print_header("Output file structure")
+    with File(output_filepath, "r") as output_file:
         structure_printer(output_file)
         print("\n")
 
-    pass
+
+def print_header(text: str) -> None:
+    print()
+    print("=" * 40)
+    print(text)
+    print("=" * 40)
+
+
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Convert old V1 HDF5 datasets into the new format.")
+    parser = ArgumentParser(
+        description="Convert old V1 HDF5 datasets into the new format."
+    )
     parser.add_argument("input_filepath", type=str, help="Input V1 HDF5 file.")
     parser.add_argument("output_filepath", type=str, help="Output V2 HDF5 file.")
 
