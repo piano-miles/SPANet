@@ -2,11 +2,10 @@
 # Requires
 # pip install "ray[tune]==2.5.1" hyperopt
 
-import json
-
 import math  # NOTE: Unused?
-import os
 from argparse import ArgumentParser
+from json import load as jload
+from os import getcwd, path
 from typing import Optional
 
 import pytorch_lightning as pl
@@ -48,7 +47,7 @@ def spanet_trial(
     num_epochs=10,
     gpus_per_trial: int = 0,
 ):
-    if not os.path.isabs(base_options_file):
+    if not path.isabs(base_options_file):
         base_options_file = f"{home_dir}/{base_options_file}"
 
     # -------------------------------------------------------------------------------------------------------
@@ -56,22 +55,22 @@ def spanet_trial(
     # -------------------------------------------------------------------------------------------------------
     options = Options()
     with open(base_options_file, "r") as json_file:
-        options.update_options(json.load(json_file))
+        options.update_options(jload(json_file))
 
     options.update_options(config)
     options.epochs = num_epochs
     options.num_dataloader_workers = 0
 
-    if not os.path.isabs(options.event_info_file):
+    if not path.isabs(options.event_info_file):
         options.event_info_file = f"{home_dir}/{options.event_info_file}"
 
-    if len(options.training_file) > 0 and not os.path.isabs(options.training_file):
+    if len(options.training_file) > 0 and not path.isabs(options.training_file):
         options.training_file = f"{home_dir}/{options.training_file}"
 
-    if len(options.validation_file) > 0 and not os.path.isabs(options.validation_file):
+    if len(options.validation_file) > 0 and not path.isabs(options.validation_file):
         options.validation_file = f"{home_dir}/{options.validation_file}"
 
-    if len(options.testing_file) > 0 and not os.path.isabs(options.testing_file):
+    if len(options.testing_file) > 0 and not path.isabs(options.testing_file):
         options.testing_file = f"{home_dir}/{options.testing_file}"
 
     # Create base model
@@ -85,7 +84,7 @@ def spanet_trial(
         devices=gpus_per_trial if gpus_per_trial > 0 else None,
         gradient_clip_val=options.gradient_clip if options.gradient_clip > 0 else None,
         enable_progress_bar=False,
-        logger=TensorBoardLogger(save_dir=os.getcwd(), name="", version="."),
+        logger=TensorBoardLogger(save_dir=getcwd(), name="", version="."),
         callbacks=[
             TuneReportCallback(
                 {"loss": "loss/total_loss", "mean_accuracy": "validation_accuracy"},
@@ -111,7 +110,7 @@ def tune_spanet(
     config = DEFAULT_CONFIG
     if search_space_file is not None:
         with open(search_space_file, "r") as file:
-            search_space = json.load(file)
+            search_space = jload(file)
 
         config = {
             key: eval(value) if isinstance(value, str) and ("tune." in value) else value
@@ -130,7 +129,7 @@ def tune_spanet(
     train_fn_with_parameters = tune.with_parameters(
         spanet_trial,
         base_options_file=base_options_file,
-        home_dir=os.getcwd(),
+        home_dir=getcwd(),
         num_epochs=num_epochs,
         gpus_per_trial=gpus_per_trial,
     )
