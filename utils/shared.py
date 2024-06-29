@@ -1,8 +1,14 @@
-from typing import Optional, List
-from tqdm import tqdm
+from typing import List, Optional
 
 import h5py
 import numpy as np
+from tqdm import tqdm
+
+
+def print_header(text: str) -> None:
+    print("=" * 40)
+    print(text)
+    print("=" * 40)
 
 
 def structure_printer(file, shape: bool = True, indent=0):
@@ -18,7 +24,9 @@ def structure_printer(file, shape: bool = True, indent=0):
         structure_printer(file[key], shape, indent + 1)
 
 
-def write(input_file, output_file, path: Optional[List[str]] = None, verbose: bool = True):
+def write(
+    input_file, output_file, path: Optional[List[str]] = None, verbose: bool = True
+):
     if path is None:
         path = []
 
@@ -43,31 +51,24 @@ def load_dataset(dataset):
     return values
 
 
-def read(file, level=0, path=[]):
+def read(file, level: int = 0, path=None):
+    if path is None:
+        path = []
     if isinstance(file, h5py.Dataset):
         return load_dataset(file)
-
-    database = {}
 
     iterator = file
     if level == 1:
         iterator = tqdm(file, f"Loading {path[-1]}")
 
-    for key in iterator:
-        database[key] = read(file[key], level + 1, path + [key])
-
-    return database
+    return {key: read(file[key], level + 1, path + [key]) for key in iterator}
 
 
 def extract(file):
     if isinstance(file, h5py.Dataset):
         return file[:]
 
-    database = {}
-    for key in file:
-        database[key] = extract(file[key])
-
-    return database
+    return {key: extract(file[key]) for key in file}
 
 
 def concatenate(head, *tail, path: Optional[List[str]] = None):
@@ -82,7 +83,9 @@ def concatenate(head, *tail, path: Optional[List[str]] = None):
         new_path = path + [key]
         print(f"Concatenating: {'/'.join(new_path)}")
         try:
-            database[key] = concatenate(head[key], *[d[key] for d in tail], path=new_path)
+            database[key] = concatenate(
+                head[key], *[d[key] for d in tail], path=new_path
+            )
         except KeyError:
             print(f"Skipping: {'/'.join(new_path)}")
             continue

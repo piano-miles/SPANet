@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from glob import glob
 
 from h5py import File
-from shared import concatenate, extract, write
+from shared import concatenate, extract, print_header, write
 
 
 def main(input_folder: str, output_file: str) -> None:
@@ -14,9 +14,10 @@ def main(input_folder: str, output_file: str) -> None:
             global_file.append(extract(file))
 
     print("=" * 40)
-    print()
 
+    print()
     print_header("Concatenating Files")
+
     global_file = concatenate(*global_file)
     print("=" * 40)
     print()
@@ -24,12 +25,6 @@ def main(input_folder: str, output_file: str) -> None:
     combine_header("Writing Output to ", output_file)
     with File(output_file, "w") as output_file:
         write(global_file, output_file)
-    print("=" * 40)
-
-
-def print_header(text: str) -> None:
-    print("=" * 40)
-    print(text)
     print("=" * 40)
 
 

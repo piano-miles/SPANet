@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 from h5py import File
-from shared import read, structure_printer, write
+from shared import print_header, read, structure_printer, write
 
 
 def convert_dataset(dataset) -> dict:
@@ -38,24 +38,20 @@ def main(input_filepath: str, output_filepath: str) -> None:
 
         dataset = read(input_file)
 
+    print()
     print_header("Converting Dataset")
     new_dataset = convert_dataset(dataset)
 
+    print()
     print_header("Creating output file")
     with File(output_filepath, "w") as output_file:
         write(new_dataset, output_file)
 
+    print()
     print_header("Output file structure")
     with File(output_filepath, "r") as output_file:
         structure_printer(output_file)
         print("\n")
-
-
-def print_header(text: str) -> None:
-    print()
-    print("=" * 40)
-    print(text)
-    print("=" * 40)
 
 
 if __name__ == "__main__":
