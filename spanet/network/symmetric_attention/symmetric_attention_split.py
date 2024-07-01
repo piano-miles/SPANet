@@ -7,48 +7,55 @@ from torch import Tensor, nn
 
 from spanet.options import Options
 from spanet.network.layers.stacked_encoder import StackedEncoder
-from spanet.network.symmetric_attention.symmetric_attention_base import SymmetricAttentionBase
+from spanet.network.symmetric_attention.symmetric_attention_base import (
+    SymmetricAttentionBase,
+)
 from spanet.network.layers.linear_block.masking import create_masking
 from spanet.network.utilities.linear_form import create_symmetric_function
 
 
 # noinspection SpellCheckingInspection
 class SymmetricAttentionSplit(SymmetricAttentionBase):
-    def __init__(self,
-                 options: Options,
-                 degree: int,
-                 permutation_indices: List[Tuple[int, ...]] = None,
-                 attention_dim: int = None) -> None:
+    def __init__(
+        self,
+        options: Options,
+        degree: int,
+        permutation_indices: List[Tuple[int, ...]] = None,
+        attention_dim: int = None,
+    ) -> None:
 
         super(SymmetricAttentionSplit, self).__init__(
-            options,
-            degree,
-            permutation_indices,
-            attention_dim
+            options, degree, permutation_indices, attention_dim
         )
 
         # Each potential jet gets its own encoder in order to extract information for attention.
-        self.encoders = nn.ModuleList([
-            StackedEncoder(
-                options,
-                options.num_jet_embedding_layers,
-                options.num_jet_encoder_layers
-            )
-            for _ in range(degree)
-        ])
+        self.encoders = nn.ModuleList(
+            [
+                StackedEncoder(
+                    options,
+                    options.num_jet_embedding_layers,
+                    options.num_jet_encoder_layers,
+                )
+                for _ in range(degree)
+            ]
+        )
 
         # After encoding, the jets are fed into a final linear layer to extract logits.
         # TODO Play around with bias
-        self.linear_layers = nn.ModuleList([
-            nn.Linear(options.hidden_dim, self.attention_dim, bias=True)
-            for _ in range(degree)
-        ])
+        self.linear_layers = nn.ModuleList(
+            [
+                nn.Linear(options.hidden_dim, self.attention_dim, bias=True)
+                for _ in range(degree)
+            ]
+        )
 
         # Mask the vectors before applying attentino operation.
         self.masking = create_masking(options.masking)
 
         # This layer ensures symmetric output by symmetrizing the OUTPUT tensor.
-        self.symmetrize_tensor = create_symmetric_function(self.batch_no_identity_permutations)
+        self.symmetrize_tensor = create_symmetric_function(
+            self.batch_no_identity_permutations
+        )
 
         # Operation to perform general n-dimensional attention.
         self.contraction_operation = self.make_contraction()
@@ -65,14 +72,16 @@ class SymmetricAttentionSplit(SymmetricAttentionBase):
         input_index_names = np.array(list(self.INPUT_INDEX_NAMES))
 
         operations = map(lambda x: f"{x}bi", input_index_names)
-        operations = ','.join(islice(operations, self.degree))
+        operations = ",".join(islice(operations, self.degree))
 
         result = f"->b{''.join(input_index_names[:self.degree])}"
 
         return operations + result
 
-    def forward(self, x: Tensor, padding_mask: Tensor, sequence_mask: Tensor) -> Tuple[Tensor, List[Tensor]]:
-        """ Perform symmetric attention on the hidden vectors and produce the output logits.
+    def forward(
+        self, x: Tensor, padding_mask: Tensor, sequence_mask: Tensor
+    ) -> Tuple[Tensor, List[Tensor]]:
+        """Perform symmetric attention on the hidden vectors and produce the output logits.
 
         This is the approximate version which learns embedding layers and computes a trivial linear form.
 

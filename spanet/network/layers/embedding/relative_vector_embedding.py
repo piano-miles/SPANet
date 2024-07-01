@@ -18,6 +18,7 @@ class RelativeVectorEmbedding(nn.Module):
     Shikai Qiu, Shuo Han, Xiangyang Ju, Benjamin Nachman, and Haichen Wang
     https://arxiv.org/pdf/2203.05687.pdf
     """
+
     __constants__ = ["input_dim", "mask_sequence_vectors", "attention_scale"]
 
     def __init__(self, options: Options, input_dim: int):
@@ -29,15 +30,25 @@ class RelativeVectorEmbedding(nn.Module):
         self.shared_embedding_stack = EmbeddingStack(options, input_dim)
         self.shared_embedding_norm = nn.LayerNorm(options.hidden_dim)
 
-        self.query_embedding = nn.Linear(options.hidden_dim, options.hidden_dim, bias=False)
-        self.key_embedding = nn.Linear(options.hidden_dim, options.hidden_dim, bias=False)
-        self.value_embedding = nn.Linear(options.hidden_dim, options.hidden_dim, bias=False)
+        self.query_embedding = nn.Linear(
+            options.hidden_dim, options.hidden_dim, bias=False
+        )
+        self.key_embedding = nn.Linear(
+            options.hidden_dim, options.hidden_dim, bias=False
+        )
+        self.value_embedding = nn.Linear(
+            options.hidden_dim, options.hidden_dim, bias=False
+        )
         self.attention_scale = np.sqrt(options.hidden_dim)
 
-        self.output = create_linear_block(options, options.hidden_dim, options.hidden_dim, options.skip_connections)
+        self.output = create_linear_block(
+            options, options.hidden_dim, options.hidden_dim, options.skip_connections
+        )
 
-    def forward(self, vectors: Tensor, mask: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """ A stack of linear blocks with each layer doubling the hidden dimension
+    def forward(
+        self, vectors: Tensor, mask: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        """A stack of linear blocks with each layer doubling the hidden dimension
 
         Parameters
         ----------
@@ -107,13 +118,19 @@ class RelativeVectorEmbedding(nn.Module):
         # attention_mask: [T, T, B]
         # ---------------------------------------------------
         attention_mask = square_mask.view(max_vectors, max_vectors, batch_size)
-        attention_mask |= torch.eye(attention_mask.shape[0], dtype=attention_mask.dtype, device=attention_mask.device).unsqueeze(-1)
+        attention_mask |= torch.eye(
+            attention_mask.shape[0],
+            dtype=attention_mask.dtype,
+            device=attention_mask.device,
+        ).unsqueeze(-1)
 
         # ---------------------------------------------------
         # Compute attention softmax weights using dot-product
         # attention_mask: [T, T, B]
         # ---------------------------------------------------
-        attention_weights = torch.einsum("rbd,rcbd->rcb", queries, keys) / self.attention_scale
+        attention_weights = (
+            torch.einsum("rbd,rcbd->rcb", queries, keys) / self.attention_scale
+        )
         attention_weights = attention_weights + torch.log(attention_mask)
         attention_weights = torch.softmax(attention_weights, dim=1)
 

@@ -16,7 +16,7 @@ from spanet.network.utilities.group_theory import (
     power_set,
     complete_symbolic_symmetry_group,
     complete_symmetry_group,
-    expand_permutations
+    expand_permutations,
 )
 
 
@@ -39,18 +39,15 @@ def key_with_default(database, key, default):
 class EventInfo:
     def __init__(
         self,
-
         # Information about observable inputs for this event.
         input_types: InputDict[str, InputType],
         input_features: InputDict[str, Tuple[FeatureInfo, ...]],
-
         # Information about the target structure for this event.
         event_particles: Particles,
         product_particles: EventDict[str, Particles],
-
         # Information about auxiliary values attached to this event.
         regressions: FeynmanDict[str, List[RegressionInfo]],
-        classifications: FeynmanDict[str, List[ClassificationInfo]]
+        classifications: FeynmanDict[str, List[ClassificationInfo]],
     ):
 
         self.input_types = input_types
@@ -61,7 +58,7 @@ class EventInfo:
         self.event_mapping = self.construct_mapping(self.event_particles)
         self.event_symmetries = Symmetries(
             len(self.event_particles),
-            self.apply_mapping(self.event_particles.permutations, self.event_mapping)
+            self.apply_mapping(self.event_particles.permutations, self.event_mapping),
         )
 
         self.product_particles = product_particles
@@ -74,17 +71,21 @@ class EventInfo:
             self.product_mappings[event_particle] = product_mapping
             self.product_symmetries[event_particle] = Symmetries(
                 len(product_particles),
-                self.apply_mapping(product_particles.permutations, product_mapping)
+                self.apply_mapping(product_particles.permutations, product_mapping),
             )
 
         self.regressions = regressions
         self.classifications = classifications
 
     def normalized_features(self, input_name: str) -> NDArray[bool]:
-        return np.array([feature.normalize for feature in self.input_features[input_name]])
+        return np.array(
+            [feature.normalize for feature in self.input_features[input_name]]
+        )
 
     def log_features(self, input_name: str) -> NDArray[bool]:
-        return np.array([feature.log_scale for feature in self.input_features[input_name]])
+        return np.array(
+            [feature.log_scale for feature in self.input_features[input_name]]
+        )
 
     @cached_property
     def event_symbolic_group(self) -> SymbolicPermutationGroup:
@@ -96,10 +97,11 @@ class EventInfo:
 
     @cached_property
     def ordered_event_transpositions(self) -> Set[List[int]]:
-        return set(chain.from_iterable(
-            e.transpositions()
-            for e in self.event_symbolic_group.elements
-        ))
+        return set(
+            chain.from_iterable(
+                e.transpositions() for e in self.event_symbolic_group.elements
+            )
+        )
 
     @cached_property
     def event_transpositions(self) -> Set[Tuple[int, int]]:
@@ -110,7 +112,9 @@ class EventInfo:
         num_particles = self.event_symmetries.degree
         group = self.event_symbolic_group
         sets = map(frozenset, power_set(range(num_particles)))
-        return set(frozenset(frozenset(g(x) for x in s) for g in group.elements) for s in sets)
+        return set(
+            frozenset(frozenset(g(x) for x in s) for g in group.elements) for s in sets
+        )
 
     @cached_property
     def product_permutation_groups(self) -> ODict[str, PermutationGroup]:
@@ -149,15 +153,11 @@ class EventInfo:
         return OrderedDict(map(reversed, enumerate(variables)))
 
     @staticmethod
-    def apply_mapping(permutations: Permutations, mapping: Dict[str, int]) -> MappedPermutations:
+    def apply_mapping(
+        permutations: Permutations, mapping: Dict[str, int]
+    ) -> MappedPermutations:
         return [
-            [
-                tuple(
-                    mapping[element]
-                    for element in cycle
-                )
-                for cycle in permutation
-            ]
+            [tuple(mapping[element] for element in cycle) for cycle in permutation]
             for permutation in permutations
         ]
 
@@ -167,10 +167,9 @@ class EventInfo:
         config.read(filename)
 
         if "INPUTS" in config:
-            features_types = OrderedDict([
-                (key.upper(), val)
-                for key, val in config["INPUTS"].items()
-            ])
+            features_types = OrderedDict(
+                [(key.upper(), val) for key, val in config["INPUTS"].items()]
+            )
         else:
             features_types = OrderedDict([("SOURCE", "sequential")])
 
@@ -182,10 +181,10 @@ class EventInfo:
                     (
                         name,
                         "normalize" in normalize.lower() or "true" in normalize.lower(),
-                        "log" in normalize.lower()
+                        "log" in normalize.lower(),
                     )
                     for name, normalize in config[key].items()
-                ]
+                ],
             )
             for key in features_types
         )
@@ -199,11 +198,17 @@ class EventInfo:
             target_permutations = config[key]["permutations"]
             targets[key] = (target_jets, target_permutations)
 
-        return cls(features_types, source_features, event_particles, event_permutations, targets)
+        return cls(
+            features_types,
+            source_features,
+            event_particles,
+            event_permutations,
+            targets,
+        )
 
     @classmethod
     def read_from_yaml(cls, filename: str):
-        with open(filename, 'r') as file:
+        with open(filename, "r") as file:
             config = yaml_load(file, Loader)
 
         # Extract input feature information.
@@ -212,26 +217,32 @@ class EventInfo:
         input_features = OrderedDict()
 
         for input_type in config[SpecialKey.Inputs]:
-            current_inputs = with_default(config[SpecialKey.Inputs][input_type], default={})
+            current_inputs = with_default(
+                config[SpecialKey.Inputs][input_type], default={}
+            )
 
             for input_name, input_information in current_inputs.items():
                 input_types[input_name] = input_type.upper()
                 input_features[input_name] = tuple(
                     FeatureInfo(
                         name=name,
-                        normalize=("normalize" in normalize.lower()) or ("true" in normalize.lower()),
-                        log_scale="log" in normalize.lower()
+                        normalize=("normalize" in normalize.lower())
+                        or ("true" in normalize.lower()),
+                        log_scale="log" in normalize.lower(),
                     )
-
                     for name, normalize in input_information.items()
                 )
 
         # Extract event and permutation information.
         # ------------------------------------------
-        permutation_config = key_with_default(config, SpecialKey.Permutations, default={})
+        permutation_config = key_with_default(
+            config, SpecialKey.Permutations, default={}
+        )
 
         event_names = tuple(config[SpecialKey.Event].keys())
-        event_permutations = key_with_default(permutation_config, SpecialKey.Event, default=[])
+        event_permutations = key_with_default(
+            permutation_config, SpecialKey.Event, default=[]
+        )
         event_permutations = expand_permutations(event_permutations)
         event_particles = Particles(event_names, event_permutations)
 
@@ -255,29 +266,41 @@ class EventInfo:
                 for source in product_sources
             ]
 
-            product_permutations = key_with_default(permutation_config, event_particle, default=[])
+            product_permutations = key_with_default(
+                permutation_config, event_particle, default=[]
+            )
             product_permutations = expand_permutations(product_permutations)
 
-            product_particles[event_particle] = Particles(product_names, product_permutations, product_sources)
+            product_particles[event_particle] = Particles(
+                product_names, product_permutations, product_sources
+            )
 
         # Extract Regression Information.
         # -------------------------------
         regressions = key_with_default(config, SpecialKey.Regressions, default={})
-        regressions = feynman_fill(regressions, event_particles, product_particles, constructor=list)
+        regressions = feynman_fill(
+            regressions, event_particles, product_particles, constructor=list
+        )
 
         # Fill in any default parameters for regressions such as gaussian type.
         regressions = feynman_map(
             lambda raw_regressions: [
-                RegressionInfo(*(regression if isinstance(regression, list) else [regression]))
+                RegressionInfo(
+                    *(regression if isinstance(regression, list) else [regression])
+                )
                 for regression in raw_regressions
             ],
-            regressions
+            regressions,
         )
 
         # Extract Classification Information.
         # -----------------------------------
-        classifications = key_with_default(config, SpecialKey.Classifications, default={})
-        classifications = feynman_fill(classifications, event_particles, product_particles, constructor=list)
+        classifications = key_with_default(
+            config, SpecialKey.Classifications, default={}
+        )
+        classifications = feynman_fill(
+            classifications, event_particles, product_particles, constructor=list
+        )
 
         return cls(
             input_types,
@@ -285,5 +308,5 @@ class EventInfo:
             event_particles,
             product_particles,
             regressions,
-            classifications
+            classifications,
         )

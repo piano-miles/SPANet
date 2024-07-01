@@ -11,11 +11,11 @@ from spanet.dataset.inputs.SequentialInput import SequentialInput
 
 
 def create_source_input(
-        event_info: EventInfo,
-        hdf5_file: h5py.File,
-        input_name: str,
-        num_events: int,
-        limit_index: np.ndarray
+    event_info: EventInfo,
+    hdf5_file: h5py.File,
+    input_name: str,
+    num_events: int,
+    limit_index: np.ndarray,
 ) -> BaseInput:
     source_class = {
         InputType.Sequential: SequentialInput,

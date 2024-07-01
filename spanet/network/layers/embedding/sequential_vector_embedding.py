@@ -17,8 +17,10 @@ class SequentialVectorEmbedding(nn.Module):
         self.mask_sequence_vectors = options.mask_sequence_vectors
         self.embedding_stack = EmbeddingStack(options, input_dim)
 
-    def forward(self, vectors: Tensor, mask: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """ A stack of linear blocks with each layer doubling the hidden dimension
+    def forward(
+        self, vectors: Tensor, mask: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        """A stack of linear blocks with each layer doubling the hidden dimension
 
         Parameters
         ----------
@@ -51,7 +53,9 @@ class SequentialVectorEmbedding(nn.Module):
         # Alternatively, replace it with all ones if we are not masking (basically never).
         # sequence_mask: [T, B, 1]
         # -------------------------------------------------------------------------------------------------
-        sequence_mask = mask.view(batch_size, max_vectors, 1).transpose(0, 1).contiguous()
+        sequence_mask = (
+            mask.view(batch_size, max_vectors, 1).transpose(0, 1).contiguous()
+        )
         if not self.mask_sequence_vectors:
             sequence_mask = torch.ones_like(sequence_mask)
 

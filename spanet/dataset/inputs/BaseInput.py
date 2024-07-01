@@ -10,12 +10,12 @@ from spanet.dataset.types import Statistics, Source
 
 class BaseInput(ABC):
     def __init__(
-            self,
-            event_info: EventInfo,
-            hdf5_file: h5py.File,
-            input_name: str,
-            num_events: int,
-            limit_index: np.ndarray
+        self,
+        event_info: EventInfo,
+        hdf5_file: h5py.File,
+        input_name: str,
+        num_events: int,
+        limit_index: np.ndarray,
     ):
         super(BaseInput, self).__init__()
 

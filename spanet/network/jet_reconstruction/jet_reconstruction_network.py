@@ -12,14 +12,16 @@ from spanet.network.layers.regression_decoder import RegressionDecoder
 from spanet.network.layers.classification_decoder import ClassificationDecoder
 
 from spanet.network.prediction_selection import extract_predictions
-from spanet.network.jet_reconstruction.jet_reconstruction_base import JetReconstructionBase
+from spanet.network.jet_reconstruction.jet_reconstruction_base import (
+    JetReconstructionBase,
+)
 
 TArray = np.ndarray
 
 
 class JetReconstructionNetwork(JetReconstructionBase):
     def __init__(self, options: Options, torch_script: bool = False):
-        """ Base class defining the SPANet architecture.
+        """Base class defining the SPANet architecture.
 
         Parameters
         ----------
@@ -33,36 +35,36 @@ class JetReconstructionNetwork(JetReconstructionBase):
 
         self.hidden_dim = options.hidden_dim
 
-        self.embedding = compile_module(MultiInputVectorEmbedding(
-            options,
-            self.training_dataset
-        ))
+        self.embedding = compile_module(
+            MultiInputVectorEmbedding(options, self.training_dataset)
+        )
 
-        self.encoder = compile_module(JetEncoder(
-            options,
-        ))
-
-        self.branch_decoders = nn.ModuleList([
-            BranchDecoder(
+        self.encoder = compile_module(
+            JetEncoder(
                 options,
-                event_particle_name,
-                self.event_info.product_particles[event_particle_name].names,
-                product_symmetry,
-                self.enable_softmax
             )
-            for event_particle_name, product_symmetry
-            in self.event_info.product_symmetries.items()
-        ])
+        )
 
-        self.regression_decoder = compile_module(RegressionDecoder(
-            options,
-            self.training_dataset
-        ))
+        self.branch_decoders = nn.ModuleList(
+            [
+                BranchDecoder(
+                    options,
+                    event_particle_name,
+                    self.event_info.product_particles[event_particle_name].names,
+                    product_symmetry,
+                    self.enable_softmax,
+                )
+                for event_particle_name, product_symmetry in self.event_info.product_symmetries.items()
+            ]
+        )
 
-        self.classification_decoder = compile_module(ClassificationDecoder(
-            options,
-            self.training_dataset
-        ))
+        self.regression_decoder = compile_module(
+            RegressionDecoder(options, self.training_dataset)
+        )
+
+        self.classification_decoder = compile_module(
+            ClassificationDecoder(options, self.training_dataset)
+        )
 
         # An example input for generating the network's graph, batch size of 2
         # self.example_input_array = tuple(x.contiguous() for x in self.training_dataset[:2][0])
@@ -73,7 +75,9 @@ class JetReconstructionNetwork(JetReconstructionBase):
 
     def forward(self, sources: Tuple[Source, ...]) -> Outputs:
         # Embed all of the different input regression_vectors into the same latent space.
-        embeddings, padding_masks, sequence_masks, global_masks = self.embedding(sources)
+        embeddings, padding_masks, sequence_masks, global_masks = self.embedding(
+            sources
+        )
 
         # Extract features from data using transformer
         hidden, event_vector = self.encoder(embeddings, padding_masks, sequence_masks)
@@ -82,9 +86,7 @@ class JetReconstructionNetwork(JetReconstructionBase):
         assignments = []
         detections = []
 
-        encoded_vectors = {
-            "EVENT": event_vector
-        }
+        encoded_vectors = {"EVENT": event_vector}
 
         # Pass the shared hidden state to every decoder branch
         for decoder in self.branch_decoders:
@@ -93,16 +95,22 @@ class JetReconstructionNetwork(JetReconstructionBase):
                 detection,
                 assignment_mask,
                 event_particle_vector,
-                product_particle_vectors
+                product_particle_vectors,
             ) = decoder(hidden, padding_masks, sequence_masks, global_masks)
 
             assignments.append(assignment)
             detections.append(detection)
 
             # Assign the summarising vectors to their correct structure.
-            encoded_vectors["/".join([decoder.particle_name, "PARTICLE"])] = event_particle_vector
-            for product_name, product_vector in zip(decoder.product_names, product_particle_vectors):
-                encoded_vectors["/".join([decoder.particle_name, product_name])] = product_vector
+            encoded_vectors["/".join([decoder.particle_name, "PARTICLE"])] = (
+                event_particle_vector
+            )
+            for product_name, product_vector in zip(
+                decoder.product_names, product_particle_vectors
+            ):
+                encoded_vectors["/".join([decoder.particle_name, product_name])] = (
+                    product_vector
+                )
 
         # Predict the valid regressions for any real values associated with the event.
         regressions = self.regression_decoder(encoded_vectors)
@@ -111,11 +119,7 @@ class JetReconstructionNetwork(JetReconstructionBase):
         classifications = self.classification_decoder(encoded_vectors)
 
         return Outputs(
-            assignments,
-            detections,
-            encoded_vectors,
-            regressions,
-            classifications
+            assignments, detections, encoded_vectors, regressions, classifications
         )
 
     def predict(self, sources: Tuple[Source, ...]) -> Predictions:
@@ -123,21 +127,24 @@ class JetReconstructionNetwork(JetReconstructionBase):
             outputs = self.forward(sources)
 
             # Extract assignment probabilities and find the least conflicting assignment.
-            assignments = extract_predictions([
-                np.nan_to_num(assignment.detach().cpu().numpy(), -np.inf)
-                for assignment in outputs.assignments
-            ])
+            assignments = extract_predictions(
+                [
+                    np.nan_to_num(assignment.detach().cpu().numpy(), -np.inf)
+                    for assignment in outputs.assignments
+                ]
+            )
 
             # Convert detection logits into probabilities and move to CPU.
-            detections = np.stack([
-                torch.sigmoid(detection).cpu().numpy()
-                for detection in outputs.detections
-            ])
+            detections = np.stack(
+                [
+                    torch.sigmoid(detection).cpu().numpy()
+                    for detection in outputs.detections
+                ]
+            )
 
             # Move regressions to CPU and away from torch.
             regressions = {
-                key: value.cpu().numpy()
-                for key, value in outputs.regressions.items()
+                key: value.cpu().numpy() for key, value in outputs.regressions.items()
             }
 
             classifications = {
@@ -145,12 +152,7 @@ class JetReconstructionNetwork(JetReconstructionBase):
                 for key, value in outputs.classifications.items()
             }
 
-        return Predictions(
-            assignments,
-            detections,
-            regressions,
-            classifications
-        )
+        return Predictions(assignments, detections, regressions, classifications)
 
     def predict_assignments(self, sources: Tuple[Source, ...]) -> np.ndarray:
         # Run the base prediction step
@@ -163,7 +165,9 @@ class JetReconstructionNetwork(JetReconstructionBase):
         # Find the optimal selection of jets from the output distributions.
         return extract_predictions(assignments)
 
-    def predict_assignments_and_detections(self, sources: Tuple[Source, ...]) -> Tuple[TArray, TArray]:
+    def predict_assignments_and_detections(
+        self, sources: Tuple[Source, ...]
+    ) -> Tuple[TArray, TArray]:
         assignments, detections, regressions, classifications = self.predict(sources)
 
         # Always predict the particle exists if we didn't train on it

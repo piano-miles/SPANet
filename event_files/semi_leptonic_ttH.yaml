@@ -22,7 +22,6 @@ INPUTS:
       sin_phi: normalize
       cos_phi: normalize
 
-
 # ----------------------------------------------------------------------
 # REQUIRED - EVENT - Complete list of resonance particles and daughters.
 # ----------------------------------------------------------------------
@@ -42,10 +41,10 @@ EVENT:
 # REQUIRED KEY - PERMUTATIONS - List of valid permutations.
 # ---------------------------------------------------------
 PERMUTATIONS:
-    ht:
-      - [ q1, q2 ]
-    h:
-      - [ b1, b2 ]
+  ht:
+    - [q1, q2]
+  h:
+    - [b1, b2]
 
 # ------------------------------------------------------------------------------
 # REQUIRED - REGRESSIONS - List of desired features to regress from observables.

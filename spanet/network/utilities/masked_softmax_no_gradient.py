@@ -3,9 +3,7 @@ from torch.nn import functional as F
 
 
 def masked_log_softmax(
-        vector: torch.Tensor,
-        mask: torch.BoolTensor,
-        dim: int = -1
+    vector: torch.Tensor, mask: torch.BoolTensor, dim: int = -1
 ) -> torch.Tensor:
     """
     Another alternative implementation of the masked log-softmax, this time doing a pure
@@ -24,9 +22,9 @@ def masked_log_softmax(
 
 
 def masked_softmax(
-        vector: torch.Tensor,
-        mask: torch.BoolTensor,
-        dim: int = -1,
-        memory_efficient: bool = False,
+    vector: torch.Tensor,
+    mask: torch.BoolTensor,
+    dim: int = -1,
+    memory_efficient: bool = False,
 ) -> torch.Tensor:
     return torch.exp(masked_log_softmax(vector, mask, dim))

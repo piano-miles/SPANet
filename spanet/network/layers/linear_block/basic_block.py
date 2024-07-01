@@ -1,16 +1,26 @@
 from torch import Tensor, nn
 
-from spanet.network.layers.linear_block.activations import create_activation, create_dropout, create_residual_connection
+from spanet.network.layers.linear_block.activations import (
+    create_activation,
+    create_dropout,
+    create_residual_connection,
+)
 from spanet.network.layers.linear_block.normalizations import create_normalization
 from spanet.network.layers.linear_block.masking import create_masking
 from spanet.options import Options
 
 
 class BasicBlock(nn.Module):
-    __constants__ = ['output_dim', 'skip_connection']
+    __constants__ = ["output_dim", "skip_connection"]
 
     # noinspection SpellCheckingInspection
-    def __init__(self, options: Options, input_dim: int, output_dim: int, skip_connection: bool = False):
+    def __init__(
+        self,
+        options: Options,
+        input_dim: int,
+        output_dim: int,
+        skip_connection: bool = False,
+    ):
         super(BasicBlock, self).__init__()
 
         self.output_dim: int = output_dim
@@ -29,13 +39,15 @@ class BasicBlock(nn.Module):
         self.dropout = create_dropout(options.dropout)
 
         # Possibly need a linear layer to create residual connection.
-        self.residual = create_residual_connection(skip_connection, input_dim, output_dim)
+        self.residual = create_residual_connection(
+            skip_connection, input_dim, output_dim
+        )
 
         # Mask out padding values
         self.masking = create_masking(options.masking)
 
     def forward(self, x: Tensor, sequence_mask: Tensor) -> Tensor:
-        """ Simple robust linear layer with non-linearity, normalization, and dropout.
+        """Simple robust linear layer with non-linearity, normalization, and dropout.
 
         Parameters
         ----------

@@ -2,8 +2,12 @@ from typing import Optional
 from sherpa import Client, Trial
 
 from spanet.options import Options
-from spanet.network.jet_reconstruction.jet_reconstruction_training import JetReconstructionTraining
-from spanet.network.jet_reconstruction.jet_reconstruction_validation import JetReconstructionValidation
+from spanet.network.jet_reconstruction.jet_reconstruction_training import (
+    JetReconstructionTraining,
+)
+from spanet.network.jet_reconstruction.jet_reconstruction_validation import (
+    JetReconstructionValidation,
+)
 
 
 class SherpaNetwork(JetReconstructionTraining, JetReconstructionValidation):
@@ -20,12 +24,16 @@ class SherpaNetwork(JetReconstructionTraining, JetReconstructionValidation):
 
         if self.client:
             self.sherpa_iteration += 1
-            self.client.send_metrics(trial=self.trial,
-                                     iteration=self.sherpa_iteration,
-                                     objective=objective.item(),
-                                     context={key: val.item() for key, val in context.items()})
+            self.client.send_metrics(
+                trial=self.trial,
+                iteration=self.sherpa_iteration,
+                objective=objective.item(),
+                context={key: val.item() for key, val in context.items()},
+            )
 
     def validation_epoch_end(self, outputs):
         # Optionally use this accuracy score for something like hyperparameter search
-        validation_accuracy = sum(x['validation_accuracy'] for x in outputs) / len(outputs)
+        validation_accuracy = sum(x["validation_accuracy"] for x in outputs) / len(
+            outputs
+        )
         self.commit_sherpa(validation_accuracy)

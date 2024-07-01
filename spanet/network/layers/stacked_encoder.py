@@ -10,20 +10,21 @@ from spanet.network.layers.linear_stack import create_linear_stack
 
 class StackedEncoder(nn.Module):
     def __init__(
-            self,
-            options: Options,
-            num_linear_layers: int,
-            num_encoder_layers: int
+        self, options: Options, num_linear_layers: int, num_encoder_layers: int
     ):
         super(StackedEncoder, self).__init__()
 
         self.particle_vector = nn.Parameter(torch.randn(1, 1, options.hidden_dim))
 
         self.encoder = create_transformer(options, num_encoder_layers)
-        self.embedding = create_linear_stack(options, num_linear_layers, options.hidden_dim, options.skip_connections)
+        self.embedding = create_linear_stack(
+            options, num_linear_layers, options.hidden_dim, options.skip_connections
+        )
 
-    def forward(self, encoded_vectors: Tensor, padding_mask: Tensor, sequence_mask: Tensor) -> Tuple[Tensor, Tensor]:
-        """ Apply time-independent linear layers followed by a transformer encoder.
+    def forward(
+        self, encoded_vectors: Tensor, padding_mask: Tensor, sequence_mask: Tensor
+    ) -> Tuple[Tensor, Tensor]:
+        """Apply time-independent linear layers followed by a transformer encoder.
 
         This is used during the branches and symmetric attention layers.
 
@@ -70,8 +71,12 @@ class StackedEncoder(nn.Module):
         # particle_sequence_mask: [1, B, 1]
         # combined_sequence_mask: [T + 1, B, 1]
         # -----------------------------------------------------------------------------
-        particle_sequence_mask = sequence_mask.new_ones(1, batch_size, 1, dtype=torch.bool)
-        combined_sequence_mask = torch.cat((particle_sequence_mask, sequence_mask), dim=0)
+        particle_sequence_mask = sequence_mask.new_ones(
+            1, batch_size, 1, dtype=torch.bool
+        )
+        combined_sequence_mask = torch.cat(
+            (particle_sequence_mask, sequence_mask), dim=0
+        )
 
         # -----------------------------------------------------------------------------
         # Run all of the vectors through transformer encoder
@@ -79,7 +84,9 @@ class StackedEncoder(nn.Module):
         # particle_vector: [B, D]
         # encoded_vectors: [T, B, D]
         # -----------------------------------------------------------------------------
-        combined_vectors = self.encoder(combined_vectors, combined_padding_mask, combined_sequence_mask)
+        combined_vectors = self.encoder(
+            combined_vectors, combined_padding_mask, combined_sequence_mask
+        )
         particle_vector, encoded_vectors = combined_vectors[0], combined_vectors[1:]
 
         return encoded_vectors, particle_vector

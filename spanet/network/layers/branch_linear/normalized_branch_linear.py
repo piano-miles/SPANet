@@ -7,15 +7,15 @@ from spanet.dataset.regressions import Regression, regression_class
 
 
 class NormalizedBranchLinear(nn.Module):
-    __constants__ = ['hidden_dim', 'num_layers', "num_outputs"]
+    __constants__ = ["hidden_dim", "num_layers", "num_outputs"]
 
     def __init__(
-            self,
-            options: Options,
-            num_layers: int,
-            regression: Type[Regression],
-            mean: Tensor,
-            std: Tensor
+        self,
+        options: Options,
+        num_layers: int,
+        regression: Type[Regression],
+        mean: Tensor,
+        std: Tensor,
     ):
         super(NormalizedBranchLinear, self).__init__()
 
@@ -26,14 +26,10 @@ class NormalizedBranchLinear(nn.Module):
         self.regression = regression
         self.mean = nn.Parameter(mean, requires_grad=False)
         self.std = nn.Parameter(std, requires_grad=False)
-        self.linear = BranchLinear(
-            options,
-            self.num_layers,
-            self.num_outputs
-        )
+        self.linear = BranchLinear(options, self.num_layers, self.num_outputs)
 
     def forward(self, vector: Tensor) -> Tensor:
-        """ Produce a single classification output for a sequence of vectors.
+        """Produce a single classification output for a sequence of vectors.
 
         Parameters
         ----------

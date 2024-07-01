@@ -9,7 +9,10 @@ from spanet.dataset.types import Symmetries
 from spanet.network.utilities import masked_log_softmax
 from spanet.network.layers.stacked_encoder import StackedEncoder
 from spanet.network.layers.branch_linear import BranchLinear
-from spanet.network.symmetric_attention import SymmetricAttentionSplit, SymmetricAttentionFull
+from spanet.network.symmetric_attention import (
+    SymmetricAttentionSplit,
+    SymmetricAttentionFull,
+)
 
 
 class BranchDecoder(nn.Module):
@@ -23,7 +26,7 @@ class BranchDecoder(nn.Module):
         particle_name: str,
         product_names: List[str],
         product_symmetries: Symmetries,
-        softmax_output: bool = True
+        softmax_output: bool = True,
     ):
         super(BranchDecoder, self).__init__()
 
@@ -37,12 +40,18 @@ class BranchDecoder(nn.Module):
         self.encoder = StackedEncoder(
             options,
             options.num_branch_embedding_layers,
-            options.num_branch_encoder_layers
+            options.num_branch_encoder_layers,
         )
 
         # Symmetric attention to create the output distribution
-        attention_layer = SymmetricAttentionSplit if options.split_symmetric_attention else SymmetricAttentionFull
-        self.attention = attention_layer(options, self.degree, product_symmetries.permutations)
+        attention_layer = (
+            SymmetricAttentionSplit
+            if options.split_symmetric_attention
+            else SymmetricAttentionFull
+        )
+        self.attention = attention_layer(
+            options, self.degree, product_symmetries.permutations
+        )
 
         # Optional output predicting if the particle was present or not
         self.detection_classifier = BranchLinear(options, options.num_detector_layers)
@@ -50,19 +59,21 @@ class BranchDecoder(nn.Module):
         self.num_targets = len(self.attention.permutation_group)
         self.permutation_indices = self.attention.permutation_indices
 
-        self.padding_mask_operation = self.create_padding_mask_operation(options.batch_size)
+        self.padding_mask_operation = self.create_padding_mask_operation(
+            options.batch_size
+        )
         self.diagonal_mask_operation = self.create_diagonal_mask_operation()
         self.diagonal_masks = {}
 
     def create_padding_mask_operation(self, batch_size: int):
-        weights_index_names = self.WEIGHTS_INDEX_NAMES[:self.degree]
-        operands = ','.join(map(lambda x: 'b' + x, weights_index_names))
+        weights_index_names = self.WEIGHTS_INDEX_NAMES[: self.degree]
+        operands = ",".join(map(lambda x: "b" + x, weights_index_names))
         expression = f"{operands}->b{weights_index_names}"
         return expression
 
     def create_diagonal_mask_operation(self):
-        weights_index_names = self.WEIGHTS_INDEX_NAMES[:self.degree]
-        operands = ','.join(map(lambda x: 'b' + x, weights_index_names))
+        weights_index_names = self.WEIGHTS_INDEX_NAMES[: self.degree]
+        operands = ",".join(map(lambda x: "b" + x, weights_index_names))
         expression = f"{operands}->{weights_index_names}"
         return expression
 
@@ -89,20 +100,22 @@ class BranchDecoder(nn.Module):
             identity = identity.type_as(output)
 
             diagonal_mask_operands = [identity * 1] * self.degree
-            diagonal_mask = torch.einsum(self.diagonal_mask_operation, *diagonal_mask_operands)
+            diagonal_mask = torch.einsum(
+                self.diagonal_mask_operation, *diagonal_mask_operands
+            )
             diagonal_mask = diagonal_mask.unsqueeze(0) < (num_jets + 1 - self.degree)
             self.diagonal_masks[(num_jets, output.device)] = diagonal_mask
 
         return (padding_mask & diagonal_mask).bool()
 
     def forward(
-            self,
-            event_vectors: Tensor,
-            padding_mask: Tensor,
-            sequence_mask: Tensor,
-            global_mask: Tensor,
+        self,
+        event_vectors: Tensor,
+        padding_mask: Tensor,
+        sequence_mask: Tensor,
+        global_mask: Tensor,
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
-        """ Create a distribution over jets for a given particle and a probability of its existence.
+        """Create a distribution over jets for a given particle and a probability of its existence.
 
         Parameters
         ----------
@@ -125,7 +138,9 @@ class BranchDecoder(nn.Module):
         # Apply the branch's independent encoder to each vector.
         # particle_vectors : [T, B, D]
         # ------------------------------------------------------
-        encoded_vectors, particle_vector = self.encoder(event_vectors, padding_mask, sequence_mask)
+        encoded_vectors, particle_vector = self.encoder(
+            event_vectors, padding_mask, sequence_mask
+        )
 
         # -----------------------------------------------
         # Run the encoded vectors through the classifier.
@@ -151,7 +166,7 @@ class BranchDecoder(nn.Module):
         assignment, daughter_vectors = self.attention(
             sequential_particle_vectors,
             sequential_padding_mask,
-            sequential_sequence_mask
+            sequential_sequence_mask,
         )
 
         assignment_mask = self.create_output_mask(assignment, sequential_sequence_mask)

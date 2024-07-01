@@ -1,6 +1,10 @@
 from torch import Tensor, nn
 
-from spanet.network.layers.linear_block.activations import create_activation, create_dropout, create_residual_connection
+from spanet.network.layers.linear_block.activations import (
+    create_activation,
+    create_dropout,
+    create_residual_connection,
+)
 from spanet.network.layers.linear_block.normalizations import create_normalization
 from spanet.network.layers.linear_block.masking import create_masking
 from spanet.options import Options
@@ -19,10 +23,16 @@ class GLU(nn.Module):
 
 
 class GatedBlock(nn.Module):
-    __constants__ = ['output_dim', 'skip_connection', 'hidden_dim']
+    __constants__ = ["output_dim", "skip_connection", "hidden_dim"]
 
     # noinspection SpellCheckingInspection
-    def __init__(self, options: Options, input_dim: int, output_dim: int, skip_connection: bool = False):
+    def __init__(
+        self,
+        options: Options,
+        input_dim: int,
+        output_dim: int,
+        skip_connection: bool = False,
+    ):
         super(GatedBlock, self).__init__()
 
         self.output_dim = output_dim
@@ -43,7 +53,9 @@ class GatedBlock(nn.Module):
         self.dropout = create_dropout(options.dropout)
 
         # Possibly need a linear layer to create residual connection.
-        self.residual = create_residual_connection(skip_connection, input_dim, output_dim)
+        self.residual = create_residual_connection(
+            skip_connection, input_dim, output_dim
+        )
 
         self.gate = GLU(output_dim)
 
@@ -51,7 +63,7 @@ class GatedBlock(nn.Module):
         self.masking = create_masking(options.masking)
 
     def forward(self, x: Tensor, sequence_mask: Tensor) -> Tensor:
-        """ Simple robust linear layer with non-linearity, normalization, and dropout.
+        """Simple robust linear layer with non-linearity, normalization, and dropout.
 
         Parameters
         ----------

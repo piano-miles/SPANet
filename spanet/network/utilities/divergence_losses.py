@@ -4,7 +4,9 @@ from torch.nn import functional as F
 
 
 @torch.jit.script
-def assignment_cross_entropy_loss(prediction: Tensor, target_data: Tensor, target_mask: Tensor, gamma: float) -> Tensor:
+def assignment_cross_entropy_loss(
+    prediction: Tensor, target_data: Tensor, target_mask: Tensor, gamma: float
+) -> Tensor:
     batch_size = prediction.shape[0]
     prediction_shape = prediction.shape[1:]
 
@@ -14,7 +16,7 @@ def assignment_cross_entropy_loss(prediction: Tensor, target_data: Tensor, targe
     # Find the unravelling shape required to flatten the target indices
     ravel_sizes = torch.tensor(prediction_shape).flip(0)
     ravel_sizes = torch.cumprod(ravel_sizes, 0)
-    ravel_sizes = torch.div(ravel_sizes, ravel_sizes[0], rounding_mode='floor')
+    ravel_sizes = torch.div(ravel_sizes, ravel_sizes[0], rounding_mode="floor")
     # ravel_sizes = ravel_sizes // ravel_sizes[0]
     ravel_sizes = ravel_sizes.flip(0).unsqueeze(0)
     ravel_sizes = ravel_sizes.to(target_data.device)
@@ -40,7 +42,10 @@ def kl_divergence_old(p: Tensor, log_p: Tensor, log_q: Tensor) -> Tensor:
 @torch.jit.script
 def kl_divergence(log_prediction: Tensor, log_target: Tensor) -> Tensor:
     sum_dim = [i for i in range(1, log_prediction.ndim)]
-    return torch.nansum(F.kl_div(log_prediction, log_target, reduction='none', log_target=True), dim=sum_dim)
+    return torch.nansum(
+        F.kl_div(log_prediction, log_target, reduction="none", log_target=True),
+        dim=sum_dim,
+    )
 
 
 @torch.jit.script
@@ -55,7 +60,7 @@ def jensen_shannon_divergence(log_p: Tensor, log_q: Tensor) -> Tensor:
     log_p = log_p.detach()
     log_q = log_q.detach()
 
-    kl_p = F.kl_div(log_m, log_p, reduction='none', log_target=True)
-    kl_q = F.kl_div(log_m, log_q, reduction='none', log_target=True)
+    kl_p = F.kl_div(log_m, log_p, reduction="none", log_target=True)
+    kl_q = F.kl_div(log_m, log_q, reduction="none", log_target=True)
 
     return torch.nansum(kl_p + kl_q, dim=sum_dim) / 2.0

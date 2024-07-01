@@ -14,23 +14,27 @@ class EmbeddingStack(nn.Module):
         super(EmbeddingStack, self).__init__()
 
         self.input_dim = input_dim
-        self.embedding_layers = nn.ModuleList(self.create_embedding_layers(options, input_dim))
+        self.embedding_layers = nn.ModuleList(
+            self.create_embedding_layers(options, input_dim)
+        )
 
     @staticmethod
     def create_embedding_layers(options: Options, input_dim: int) -> List[BasicBlock]:
-        """ Create a stack of linear layer with increasing hidden dimensions.
+        """Create a stack of linear layer with increasing hidden dimensions.
 
         Each hidden layer will have double the dimensions as the previous, beginning with the
         size of the feature-space and ending with the hidden_dim specified in options.
         """
 
         # Initial embedding layer to just project to our shared first dimension.
-        embedding_layers = [create_linear_block(
-            options,
-            input_dim,
-            options.initial_embedding_dim,
-            options.initial_embedding_skip_connections
-        )]
+        embedding_layers = [
+            create_linear_block(
+                options,
+                input_dim,
+                options.initial_embedding_dim,
+                options.initial_embedding_skip_connections,
+            )
+        ]
         current_embedding_dim = options.initial_embedding_dim
 
         # Keep doubling dimensions until we reach the desired latent dimension.
@@ -39,26 +43,30 @@ class EmbeddingStack(nn.Module):
             if next_embedding_dim >= options.hidden_dim:
                 break
 
-            embedding_layers.append(create_linear_block(
-                options,
-                current_embedding_dim,
-                next_embedding_dim,
-                options.initial_embedding_skip_connections
-            ))
+            embedding_layers.append(
+                create_linear_block(
+                    options,
+                    current_embedding_dim,
+                    next_embedding_dim,
+                    options.initial_embedding_skip_connections,
+                )
+            )
             current_embedding_dim = next_embedding_dim
 
         # Final embedding layer to ensure proper size on output.
-        embedding_layers.append(create_linear_block(
-            options,
-            current_embedding_dim,
-            options.hidden_dim,
-            options.initial_embedding_skip_connections
-        ))
+        embedding_layers.append(
+            create_linear_block(
+                options,
+                current_embedding_dim,
+                options.hidden_dim,
+                options.initial_embedding_skip_connections,
+            )
+        )
 
         return embedding_layers
 
     def forward(self, vectors: Tensor, sequence_mask: Tensor) -> Tensor:
-        """ Embed a sequence of vectors through a series of doubling linear layers.
+        """Embed a sequence of vectors through a series of doubling linear layers.
 
         Parameters
         ----------

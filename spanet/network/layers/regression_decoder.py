@@ -10,7 +10,7 @@ from spanet.dataset.jet_reconstruction_dataset import JetReconstructionDataset
 
 
 class RegressionDecoder(nn.Module):
-    __constants__ = ['hidden_dim', 'num_layers']
+    __constants__ = ["hidden_dim", "num_layers"]
 
     def __init__(self, options: Options, training_dataset: JetReconstructionDataset):
         super(RegressionDecoder, self).__init__()
@@ -30,7 +30,7 @@ class RegressionDecoder(nn.Module):
                 options.num_regression_layers,
                 regression_class(training_dataset.regression_types[name]),
                 means[name],
-                stds[name]
+                stds[name],
             )
 
         self.networks = nn.ModuleDict(networks)
@@ -41,6 +41,6 @@ class RegressionDecoder(nn.Module):
         # outputs: Dict with mapping name -> [B, O_name]
 
         return {
-            key: network(vectors['/'.join(key.split('/')[:-1])]).view(-1)
+            key: network(vectors["/".join(key.split("/")[:-1])]).view(-1)
             for key, network in self.networks.items()
         }

@@ -3,6 +3,7 @@ from torch import Tensor
 
 from spanet.dataset.types import Statistics
 
+
 class Regression(ABC):
     @staticmethod
     @abstractmethod

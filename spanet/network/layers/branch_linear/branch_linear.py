@@ -6,14 +6,14 @@ from spanet.network.layers.linear_stack import create_linear_stack
 
 
 class BranchLinear(nn.Module):
-    __constants__ = ['hidden_dim', 'num_layers']
+    __constants__ = ["hidden_dim", "num_layers"]
 
     def __init__(
-            self,
-            options: Options,
-            num_layers: int,
-            num_outputs: int = 1,
-            batch_norm: bool = True
+        self,
+        options: Options,
+        num_layers: int,
+        num_outputs: int = 1,
+        batch_norm: bool = True,
     ):
         super(BranchLinear, self).__init__()
 
@@ -21,10 +21,7 @@ class BranchLinear(nn.Module):
         self.num_layers = num_layers
 
         self.hidden_layers = create_linear_stack(
-            options,
-            self.num_layers,
-            self.hidden_dim,
-            options.skip_connections
+            options, self.num_layers, self.hidden_dim, options.skip_connections
         )
 
         # TODO Play around with this normalization layer
@@ -36,7 +33,7 @@ class BranchLinear(nn.Module):
         self.output_layer = nn.Linear(options.hidden_dim, num_outputs)
 
     def forward(self, single_vector: Tensor) -> Tensor:
-        """ Produce a single classification output for a sequence of vectors.
+        """Produce a single classification output for a sequence of vectors.
 
         Parameters
         ----------
@@ -56,7 +53,9 @@ class BranchLinear(nn.Module):
         # sequence_mask: [1, B, 1]
         # single_vector: [1, B, D]
         # -----------------------------------------------------------------------------
-        sequence_mask = torch.ones(1, batch_size, 1, dtype=torch.bool, device=single_vector.device)
+        sequence_mask = torch.ones(
+            1, batch_size, 1, dtype=torch.bool, device=single_vector.device
+        )
         single_vector = single_vector.view(1, batch_size, input_dim)
 
         # ---------------------------------------------------------------------------

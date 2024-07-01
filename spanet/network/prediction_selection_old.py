@@ -5,6 +5,7 @@ from numba import njit
 from numba.extending import overload
 
 from warnings import filterwarnings
+
 filterwarnings("ignore", category=numba.NumbaPendingDeprecationWarning)
 
 
@@ -72,36 +73,43 @@ def mask_7(data, index, value):
 @overload(mask)
 def mask_impl(data, index, value):
     if data.ndim == 1:
+
         def impl(data, index, value):
             return mask_1(data, index, value)
 
         return impl
     if data.ndim == 2:
+
         def impl(data, index, value):
             return mask_2(data, index, value)
 
         return impl
     if data.ndim == 3:
+
         def impl(data, index, value):
             return mask_3(data, index, value)
 
         return impl
     if data.ndim == 4:
+
         def impl(data, index, value):
             return mask_4(data, index, value)
 
         return impl
     if data.ndim == 5:
+
         def impl(data, index, value):
             return mask_5(data, index, value)
 
         return impl
     if data.ndim == 6:
+
         def impl(data, index, value):
             return mask_6(data, index, value)
 
         return impl
     if data.ndim == 7:
+
         def impl(data, index, value):
             return mask_7(data, index, value)
 
@@ -147,7 +155,9 @@ def extract_prediction(input_predictions, max_dimensions=0):
 
     while np.any(results < -1):
         best_index = np.argmax(np.array([np.max(pp) for pp in predictions]))
-        best_jets = unravel_index(np.argmax(predictions[best_index].ravel()), shapes[best_index])
+        best_jets = unravel_index(
+            np.argmax(predictions[best_index].ravel()), shapes[best_index]
+        )
 
         results[best_index] = -1
         for i in range(predictions[best_index].ndim):

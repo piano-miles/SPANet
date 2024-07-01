@@ -16,9 +16,9 @@ class StandardTransformer(TransformerBase):
                 self.num_heads,
                 self.dim_feedforward,
                 self.dropout,
-                self.transformer_activation
+                self.transformer_activation,
             ),
-            num_layers
+            num_layers,
         )
 
     def forward(self, x: Tensor, padding_mask: Tensor, sequence_mask: Tensor) -> Tensor:

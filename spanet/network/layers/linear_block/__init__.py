@@ -6,19 +6,16 @@ from spanet.network.layers.linear_block.resnet_block import ResNetBlock
 
 
 def create_linear_block(
-        options: Options,
-        input_dim: int,
-        output_dim: int,
-        skip_connection: bool = False
+    options: Options, input_dim: int, output_dim: int, skip_connection: bool = False
 ):
     linear_block_type = options.linear_block_type
     linear_block_type = linear_block_type.lower().replace("_", "").replace(" ", "")
 
     if linear_block_type == "resnet":
         return ResNetBlock(options, input_dim, output_dim, skip_connection)
-    elif linear_block_type == 'gated':
+    elif linear_block_type == "gated":
         return GatedBlock(options, input_dim, output_dim, skip_connection)
-    elif linear_block_type == 'gru':
+    elif linear_block_type == "gru":
         return GRUBlock(options, input_dim, output_dim, skip_connection)
     else:
         return BasicBlock(options, input_dim, output_dim, skip_connection)

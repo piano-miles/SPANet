@@ -11,12 +11,11 @@ from spanet.dataset.regressions.log_gaussian_regression import LogGaussianRegres
 all_regressions: List[Type[Regression]] = [
     GaussianRegression,
     LaplacianRegression,
-    LogGaussianRegression
+    LogGaussianRegression,
 ]
 
 regression_mapping: Dict[str, Type[Regression]] = {
-    regression.name(): regression
-    for regression in all_regressions
+    regression.name(): regression for regression in all_regressions
 }
 
 
@@ -30,4 +29,3 @@ def regression_loss(name: str) -> Callable[[Tensor, Tensor, Tensor, Tensor], Ten
 
 def regression_statistics(name: str) -> Callable[[Tensor], Statistics]:
     return regression_mapping[name].statistics
-

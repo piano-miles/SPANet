@@ -18,7 +18,6 @@ INPUTS:
   # ---------------------------------------------------------------------
   GLOBAL:
 
-
 # ----------------------------------------------------------------------
 # REQUIRED - EVENT - Complete list of resonance particles and daughters.
 # ----------------------------------------------------------------------
@@ -36,19 +35,17 @@ EVENT:
 # REQUIRED KEY - PERMUTATIONS - List of valid permutations.
 # ---------------------------------------------------------
 PERMUTATIONS:
-    EVENT:
-      - [ t1, t2 ]
-    t1:
-      - [ q1, q2 ]
-    t2:
-      - [ q1, q2 ]
-
+  EVENT:
+    - [t1, t2]
+  t1:
+    - [q1, q2]
+  t2:
+    - [q1, q2]
 
 # ------------------------------------------------------------------------------
 # REQUIRED - REGRESSIONS - List of desired features to regress from observables.
 # ------------------------------------------------------------------------------
 REGRESSIONS:
-
 
 # -----------------------------------------------------------------------------
 # REQUIRED - REGRESSIONS - List of desired classes to predict from observables.

@@ -1,7 +1,11 @@
 import torch
 from torch import Tensor, nn
 
-from spanet.network.layers.linear_block.activations import create_activation, create_dropout, create_residual_connection
+from spanet.network.layers.linear_block.activations import (
+    create_activation,
+    create_dropout,
+    create_residual_connection,
+)
 from spanet.network.layers.linear_block.normalizations import create_normalization
 from spanet.network.layers.linear_block.masking import create_masking
 from spanet.options import Options
@@ -24,17 +28,25 @@ class GRUGate(nn.Module):
 
     def forward(self, vectors: Tensor, residual: Tensor) -> Tensor:
         r = torch.sigmoid(self.linear_W_r(vectors) + self.linear_U_r(residual))
-        z = torch.sigmoid(self.linear_W_z(vectors) + self.linear_U_z(residual) - self.gate_bias)
+        z = torch.sigmoid(
+            self.linear_W_z(vectors) + self.linear_U_z(residual) - self.gate_bias
+        )
         h = torch.tanh(self.linear_W_g(vectors) + self.linear_U_g(r * residual))
 
         return (1 - z) * residual + z * h
 
 
 class GRUBlock(nn.Module):
-    __constants__ = ['input_dim', 'output_dim', 'skip_connection', 'hidden_dim']
+    __constants__ = ["input_dim", "output_dim", "skip_connection", "hidden_dim"]
 
     # noinspection SpellCheckingInspection
-    def __init__(self, options: Options, input_dim: int, output_dim: int, skip_connection: bool = False):
+    def __init__(
+        self,
+        options: Options,
+        input_dim: int,
+        output_dim: int,
+        skip_connection: bool = False,
+    ):
         super(GRUBlock, self).__init__()
 
         self.input_dim = input_dim
@@ -49,13 +61,13 @@ class GRUBlock(nn.Module):
         self.linear_1 = nn.Sequential(
             nn.Linear(input_dim, self.hidden_dim),
             create_activation(options.linear_activation, self.hidden_dim),
-            create_dropout(options.dropout)
+            create_dropout(options.dropout),
         )
 
         self.linear_2 = nn.Sequential(
             nn.Linear(self.hidden_dim, output_dim),
             create_activation(options.linear_activation, output_dim),
-            create_dropout(options.dropout)
+            create_dropout(options.dropout),
         )
 
         # GRU layer to gate and project back to output. This will also handle the
@@ -63,13 +75,15 @@ class GRUBlock(nn.Module):
         self.gru = GRUGate(output_dim)
 
         # Possibly need a linear layer to create residual connection.
-        self.residual = create_residual_connection(skip_connection, input_dim, output_dim)
+        self.residual = create_residual_connection(
+            skip_connection, input_dim, output_dim
+        )
 
         # Mask out padding values
         self.masking = create_masking(options.masking)
 
     def forward(self, x: Tensor, sequence_mask: Tensor) -> Tensor:
-        """ Simple robust linear layer with non-linearity, normalization, and dropout.
+        """Simple robust linear layer with non-linearity, normalization, and dropout.
 
         Parameters
         ----------

@@ -31,7 +31,9 @@ class ZeroModule(nn.Module):
         return torch.zeros_like(vectors)
 
 
-def create_residual_connection(skip_connection: bool, input_dim: int, output_dim: int) -> nn.Module:
+def create_residual_connection(
+    skip_connection: bool, input_dim: int, output_dim: int
+) -> nn.Module:
     if input_dim == output_dim or not skip_connection:
         return nn.Identity()
 

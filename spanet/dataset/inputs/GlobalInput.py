@@ -9,6 +9,7 @@ from torch import Tensor
 from spanet.dataset.types import SpecialKey, Statistics, Source
 from spanet.dataset.inputs.BaseInput import BaseInput
 
+
 class GlobalInput(BaseInput):
 
     def load(self, hdf5_file: h5py.File, limit_index: np.ndarray):
@@ -16,7 +17,9 @@ class GlobalInput(BaseInput):
 
         # Try and load a mask for this global features. If none is present, assume all vectors are valid.
         try:
-            source_mask = torch.from_numpy(self.dataset(hdf5_file, input_group, SpecialKey.Mask)[:]).contiguous()
+            source_mask = torch.from_numpy(
+                self.dataset(hdf5_file, input_group, SpecialKey.Mask)[:]
+            ).contiguous()
         except KeyError:
             source_mask = torch.ones(self.num_events, dtype=torch.bool)
 
@@ -24,8 +27,12 @@ class GlobalInput(BaseInput):
         num_features = self.event_info.num_features(self.input_name)
         source_data = torch.empty(num_features, self.num_events, dtype=torch.float32)
 
-        for index, (feature, _, log_transform) in enumerate(self.event_info.input_features[self.input_name]):
-            self.dataset(hdf5_file, input_group, feature).read_direct(source_data[index].numpy())
+        for index, (feature, _, log_transform) in enumerate(
+            self.event_info.input_features[self.input_name]
+        ):
+            self.dataset(hdf5_file, input_group, feature).read_direct(
+                source_data[index].numpy()
+            )
             if log_transform:
                 source_data[index] += 1
                 torch.log_(source_data[index])

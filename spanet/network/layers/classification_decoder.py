@@ -9,7 +9,7 @@ from spanet.dataset.jet_reconstruction_dataset import JetReconstructionDataset
 
 
 class ClassificationDecoder(nn.Module):
-    __constants__ = ['hidden_dim', 'num_layers']
+    __constants__ = ["hidden_dim", "num_layers"]
 
     def __init__(self, options: Options, training_dataset: JetReconstructionDataset):
         super(ClassificationDecoder, self).__init__()
@@ -24,9 +24,7 @@ class ClassificationDecoder(nn.Module):
                 continue
 
             networks[name] = BranchLinear(
-                options,
-                options.num_classification_layers,
-                counts[name]
+                options, options.num_classification_layers, counts[name]
             )
 
             # networks[name] = MultiOutputBranchLinear(
@@ -42,6 +40,6 @@ class ClassificationDecoder(nn.Module):
         # outputs: Dict with mapping name -> [B, O_name]
 
         return {
-            key: network(vectors['/'.join(key.split('/')[:-1])])
+            key: network(vectors["/".join(key.split("/")[:-1])])
             for key, network in self.networks.items()
         }

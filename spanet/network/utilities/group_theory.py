@@ -9,14 +9,11 @@ from spanet.dataset.types import (
     MappedPermutation,
     MappedPermutations,
     PermutationGroup,
-    SymbolicPermutationGroup
+    SymbolicPermutationGroup,
 )
 
 # Possible types of permutation that the user can input
-RawPermutation = Union[
-    List[List[str]],  # Explicit
-    List[str]  # Complete Group
-]
+RawPermutation = Union[List[List[str]], List[str]]  # Explicit  # Complete Group
 
 
 def expand_permutation(permutation: RawPermutation) -> Permutation:
@@ -32,26 +29,34 @@ def expand_permutations(permutations: List[RawPermutation]) -> Permutations:
         if isinstance(permutation[0], list):
             expanded_permutations.append([tuple(p) for p in permutation])
         else:
-            expanded_permutations.extend([[tuple(p)] for p in combinations(permutation, 2)])
+            expanded_permutations.extend(
+                [[tuple(p)] for p in combinations(permutation, 2)]
+            )
     return expanded_permutations
 
 
 def power_set(iterable):
     s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-def complete_indices(degree: int, permutations: MappedPermutations) -> MappedPermutations:
-    """ Add missing elements to a permutation group based on the expected degree. """
+def complete_indices(
+    degree: int, permutations: MappedPermutations
+) -> MappedPermutations:
+    """Add missing elements to a permutation group based on the expected degree."""
     output = permutations.copy()
-    missing_indices = set(range(degree)) - set(chain.from_iterable(chain.from_iterable(permutations)))
+    missing_indices = set(range(degree)) - set(
+        chain.from_iterable(chain.from_iterable(permutations))
+    )
     for index in missing_indices:
         output.append([(index,)])
 
     return output
 
 
-def symbolic_symmetry_group(permutations: MappedPermutations) -> SymbolicPermutationGroup:
+def symbolic_symmetry_group(
+    permutations: MappedPermutations,
+) -> SymbolicPermutationGroup:
     generators = []
     for permutation in permutations:
         symbolic_permutation = SymbolicPermutation
@@ -68,11 +73,15 @@ def symmetry_group(permutations: MappedPermutations) -> PermutationGroup:
     return list(symmetries)
 
 
-def complete_symbolic_symmetry_group(degree: int, permutations: MappedPermutations) -> SymbolicPermutationGroup:
+def complete_symbolic_symmetry_group(
+    degree: int, permutations: MappedPermutations
+) -> SymbolicPermutationGroup:
     permutations = complete_indices(degree, permutations)
     return symbolic_symmetry_group(permutations)
 
 
-def complete_symmetry_group(degree: int, permutations: MappedPermutations) -> PermutationGroup:
+def complete_symmetry_group(
+    degree: int, permutations: MappedPermutations
+) -> PermutationGroup:
     permutations = complete_indices(degree, permutations)
     return symmetry_group(permutations)

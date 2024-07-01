@@ -7,18 +7,21 @@ from spanet.dataset.types import SpecialKey, Statistics, Source
 from spanet.dataset.inputs.BaseInput import BaseInput
 
 
-
 class RelativeInput(BaseInput):
     # noinspection PyAttributeOutsideInit
     def load(self, hdf5_file: h5py.File, limit_index: np.ndarray):
         input_group = [SpecialKey.Inputs, self.input_name]
 
         # Load in the mask for this vector input
-        invariant_mask = torch.from_numpy(self.dataset(hdf5_file, input_group, SpecialKey.Mask)[:]).contiguous()
+        invariant_mask = torch.from_numpy(
+            self.dataset(hdf5_file, input_group, SpecialKey.Mask)[:]
+        ).contiguous()
         covariant_mask = invariant_mask[:, None, :] * invariant_mask[:, :, None]
 
         # Get all the features in this group, we need to figure out if each one is invariant or covariant
-        feature_names = list(self.dataset(hdf5_file, [SpecialKey.Inputs], self.input_name).keys())
+        feature_names = list(
+            self.dataset(hdf5_file, [SpecialKey.Inputs], self.input_name).keys()
+        )
         feature_names.remove(SpecialKey.Mask)
 
         # Separate the two types of features by their shape
@@ -33,13 +36,23 @@ class RelativeInput(BaseInput):
 
         # Load in vector features into a pre-made buffer
         num_jets = invariant_mask.shape[1]
-        invariant_data = torch.empty(len(self.invariant_features), self.num_events, num_jets, dtype=torch.float32)
-        covariant_data = torch.empty(len(self.covariant_features), self.num_events, num_jets, num_jets, dtype=torch.float32)
+        invariant_data = torch.empty(
+            len(self.invariant_features), self.num_events, num_jets, dtype=torch.float32
+        )
+        covariant_data = torch.empty(
+            len(self.covariant_features),
+            self.num_events,
+            num_jets,
+            num_jets,
+            dtype=torch.float32,
+        )
 
         invariant_index = 0
         covariant_index = 0
 
-        for (feature, _, log_transform) in self.event_info.input_features[self.input_name]:
+        for feature, _, log_transform in self.event_info.input_features[
+            self.input_name
+        ]:
             current_dataset = self.dataset(hdf5_file, input_group, feature)
             if len(current_dataset.shape) == 2:
                 current_data = invariant_data
@@ -93,17 +106,21 @@ class RelativeInput(BaseInput):
         masked_covariant_std = masked_covariant_data.std(0)
         masked_covariant_std[masked_covariant_std < 1e-5] = 1
 
-        unnormalized_invariant_features = ~np.array([feature[1] for feature in self.invariant_features])
+        unnormalized_invariant_features = ~np.array(
+            [feature[1] for feature in self.invariant_features]
+        )
         masked_invariant_mean[unnormalized_invariant_features] = 0
         masked_invariant_std[unnormalized_invariant_features] = 1
 
-        unnormalized_covariant_features = ~np.array([feature[1] for feature in self.covariant_features])
+        unnormalized_covariant_features = ~np.array(
+            [feature[1] for feature in self.covariant_features]
+        )
         masked_covariant_mean[unnormalized_covariant_features] = 0
         masked_covariant_std[unnormalized_covariant_features] = 1
 
         return Statistics(
             torch.cat((masked_invariant_mean, masked_covariant_mean)),
-            torch.cat((masked_invariant_std, masked_covariant_std))
+            torch.cat((masked_invariant_std, masked_covariant_std)),
         )
 
     def num_vectors(self) -> int:
@@ -124,5 +141,5 @@ class RelativeInput(BaseInput):
 
         return Source(
             data=torch.cat((invariant_data, covariant_data), -1),
-            mask=self.covariant_mask[item]
+            mask=self.covariant_mask[item],
         )

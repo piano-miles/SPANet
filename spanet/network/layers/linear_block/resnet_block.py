@@ -3,22 +3,26 @@ from torch import Tensor, nn, jit
 
 from spanet.options import Options
 from spanet.network.layers.linear_block.normalizations import create_normalization
-from spanet.network.layers.linear_block.activations import create_activation, create_dropout
+from spanet.network.layers.linear_block.activations import (
+    create_activation,
+    create_dropout,
+)
 from spanet.network.layers.linear_block.masking import create_masking
 
 
 class NormalizationFirstBlock(nn.Module):
-    __constants__ = ['output_dim', 'skip_connection']
+    __constants__ = ["output_dim", "skip_connection"]
 
     # noinspection SpellCheckingInspection
     def __init__(
-            self,
-            options: Options,
-            input_dim: int,
-            output_dim: int,
-            skip_connection: bool = False,
-            normalization: Optional[str] = None,
-            dropout: Optional[float] = None):
+        self,
+        options: Options,
+        input_dim: int,
+        output_dim: int,
+        skip_connection: bool = False,
+        normalization: Optional[str] = None,
+        dropout: Optional[float] = None,
+    ):
         super(NormalizationFirstBlock, self).__init__()
 
         self.output_dim: int = output_dim
@@ -31,7 +35,9 @@ class NormalizationFirstBlock(nn.Module):
         self.activation = create_activation(options.linear_activation, output_dim)
 
         # Optional activation normalization. Either batch or layer norm.
-        normalization = options.normalization if normalization is None else normalization
+        normalization = (
+            options.normalization if normalization is None else normalization
+        )
         self.normalization = create_normalization(normalization, output_dim)
 
         # Optional dropout for regularization.
@@ -40,8 +46,10 @@ class NormalizationFirstBlock(nn.Module):
         # Mask out padding values
         self.masking = create_masking(options.masking)
 
-    def forward(self, x: Tensor, sequence_mask: Tensor, residual: Optional[Tensor] = None) -> Tensor:
-        """ Simple robust linear layer with non-linearity, normalization, and dropout.
+    def forward(
+        self, x: Tensor, sequence_mask: Tensor, residual: Optional[Tensor] = None
+    ) -> Tensor:
+        """Simple robust linear layer with non-linearity, normalization, and dropout.
 
         Parameters
         ----------
@@ -94,11 +102,21 @@ class NormalizationFirstBlock(nn.Module):
 
 
 class ResNetBlock(nn.Module):
-    def __init__(self, options: Options, input_dim: int, output_dim: int, skip_connection: bool = True):
+    def __init__(
+        self,
+        options: Options,
+        input_dim: int,
+        output_dim: int,
+        skip_connection: bool = True,
+    ):
         super(ResNetBlock, self).__init__()
 
-        self.block_1 = NormalizationFirstBlock(options, input_dim, output_dim, skip_connection=False, dropout=0.0)
-        self.block_2 = NormalizationFirstBlock(options, output_dim, output_dim, skip_connection=skip_connection)
+        self.block_1 = NormalizationFirstBlock(
+            options, input_dim, output_dim, skip_connection=False, dropout=0.0
+        )
+        self.block_2 = NormalizationFirstBlock(
+            options, output_dim, output_dim, skip_connection=skip_connection
+        )
 
     def forward(self, x: Tensor, sequence_mask: Tensor) -> Tensor:
         hidden = self.block_1(x, sequence_mask)

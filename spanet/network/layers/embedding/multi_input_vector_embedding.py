@@ -7,7 +7,9 @@ from spanet.options import Options
 from spanet.dataset.jet_reconstruction_dataset import JetReconstructionDataset
 
 from spanet.network.layers.linear_block import create_linear_block
-from spanet.network.layers.embedding.combined_vector_embedding import CombinedVectorEmbedding
+from spanet.network.layers.embedding.combined_vector_embedding import (
+    CombinedVectorEmbedding,
+)
 
 
 class MultiInputVectorEmbedding(nn.Module):
@@ -15,20 +17,26 @@ class MultiInputVectorEmbedding(nn.Module):
         super(MultiInputVectorEmbedding, self).__init__()
 
         # Primary embedding blocks to convert each input type into an identically shaped vector.
-        self.vector_embedding_layers = nn.ModuleList([
-            CombinedVectorEmbedding(options, training_dataset, input_name, input_type)
-            for input_name, input_type in training_dataset.event_info.input_types.items()
-        ])
+        self.vector_embedding_layers = nn.ModuleList(
+            [
+                CombinedVectorEmbedding(
+                    options, training_dataset, input_name, input_type
+                )
+                for input_name, input_type in training_dataset.event_info.input_types.items()
+            ]
+        )
 
         # A final embedding layer to convert the position encoded vectors into a unified vector space.
         self.final_embedding_layer = create_linear_block(
             options,
             options.position_embedding_dim + options.hidden_dim,
             options.hidden_dim,
-            options.skip_connections
+            options.skip_connections,
         )
 
-    def forward(self, sources: List[Tuple[Tensor, Tensor]]) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def forward(
+        self, sources: List[Tuple[Tensor, Tensor]]
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """
 
         Parameters
@@ -52,7 +60,9 @@ class MultiInputVectorEmbedding(nn.Module):
         sequence_masks = []
         global_masks = []
 
-        for input_index, vector_embedding_layer in enumerate(self.vector_embedding_layers):
+        for input_index, vector_embedding_layer in enumerate(
+            self.vector_embedding_layers
+        ):
             source_data, source_mask = sources[input_index]
 
             # Embed each vector type into the same latent space.

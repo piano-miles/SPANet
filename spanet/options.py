@@ -3,7 +3,13 @@ from argparse import Namespace
 
 
 class Options(Namespace):
-    def __init__(self, event_info_file: str = "", training_file: str = "", validation_file: str = "", testing_file: str = ""):
+    def __init__(
+        self,
+        event_info_file: str = "",
+        training_file: str = "",
+        validation_file: str = "",
+        testing_file: str = "",
+    ):
         super(Options, self).__init__()
 
         # =========================================================================================
@@ -68,7 +74,7 @@ class Options(Namespace):
         self.num_attention_heads: int = 4
 
         # Activation function for all transformer layers, 'relu' or 'gelu'.
-        self.transformer_activation: str = 'gelu'
+        self.transformer_activation: str = "gelu"
 
         # Whether or not to add skip connections to internal linear layers.
         # All layers support skip connections, this can turn them off.
@@ -198,7 +204,7 @@ class Options(Namespace):
         # softmin
         # mean
         # -------------------------------------------------
-        self.combine_pair_loss: str = 'min'
+        self.combine_pair_loss: str = "min"
 
         # The optimizer to use for trianing the network.
         # This must be a valid class in torch.optim or nvidia apex with 'apex' prefix.
@@ -249,7 +255,7 @@ class Options(Namespace):
 
         # Number of epochs to train for.
         self.epochs: int = 100
-        
+
         # Total number of GPUs to use.
         self.num_gpu: int = 1
 
@@ -262,11 +268,11 @@ class Options(Namespace):
 
         # Misc parameters used by sherpa to delegate GPUs and output directories.
         # These should not be set manually.
-        self.usable_gpus: str = ''
+        self.usable_gpus: str = ""
 
-        self.trial_time: str = ''
+        self.trial_time: str = ""
 
-        self.trial_output_dir: str = './test_output'
+        self.trial_output_dir: str = "./test_output"
 
     def display(self):
         try:
@@ -281,7 +287,11 @@ class Options(Namespace):
             table.add_column("Value", justify="left")
 
             for key, value in sorted(self.__dict__.items()):
-                table.add_row(key, str(value), style="red" if value != default_options[key] else None)
+                table.add_row(
+                    key,
+                    str(value),
+                    style="red" if value != default_options[key] else None,
+                )
 
             console.print(table)
 
@@ -294,10 +304,19 @@ class Options(Namespace):
             print("=" * 70)
 
     def update_options(self, new_options, update_datasets: bool = True):
-        integer_options = {key for key, val in self.__dict__.items() if isinstance(val, int)}
-        boolean_options = {key for key, val in self.__dict__.items() if isinstance(val, bool)}
+        integer_options = {
+            key for key, val in self.__dict__.items() if isinstance(val, int)
+        }
+        boolean_options = {
+            key for key, val in self.__dict__.items() if isinstance(val, bool)
+        }
         for key, value in new_options.items():
-            if not update_datasets and key in {"event_info_file", "training_file", "validation_file", "testing_file"}:
+            if not update_datasets and key in {
+                "event_info_file",
+                "training_file",
+                "validation_file",
+                "testing_file",
+            }:
                 continue
 
             if key in integer_options:
@@ -308,16 +327,16 @@ class Options(Namespace):
                 setattr(self, key, value)
 
     def update(self, filepath: str):
-        with open(filepath, 'r') as json_file:
+        with open(filepath, "r") as json_file:
             self.update_options(json.load(json_file))
 
     @classmethod
     def load(cls, filepath: str):
         options = cls()
-        with open(filepath, 'r') as json_file:
+        with open(filepath, "r") as json_file:
             options.update_options(json.load(json_file))
         return options
 
     def save(self, filepath: str):
-        with open(filepath, 'w') as json_file:
+        with open(filepath, "w") as json_file:
             json.dump(self.__dict__, json_file, indent=4, sort_keys=True)

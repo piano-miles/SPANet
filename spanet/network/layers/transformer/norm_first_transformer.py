@@ -17,9 +17,9 @@ class NormFirstTransformer(TransformerBase):
                 self.dim_feedforward,
                 self.dropout,
                 self.transformer_activation,
-                norm_first=True
+                norm_first=True,
             ),
-            num_layers
+            num_layers,
         )
 
     def forward(self, x: Tensor, padding_mask: Tensor, sequence_mask: Tensor) -> Tensor:

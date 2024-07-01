@@ -9,7 +9,9 @@ from rich import progress
 
 from spanet import JetReconstructionModel, Options
 from spanet.dataset.types import Evaluation, Outputs, Source
-from spanet.network.jet_reconstruction.jet_reconstruction_network import extract_predictions
+from spanet.network.jet_reconstruction.jet_reconstruction_network import (
+    extract_predictions,
+)
 
 from collections import defaultdict
 
@@ -42,14 +44,14 @@ def load_model(
     batch_size: Optional[int] = None,
     cuda: bool = False,
     fp16: bool = False,
-    checkpoint: Optional[str] = None
+    checkpoint: Optional[str] = None,
 ) -> JetReconstructionModel:
     # Load the best-performing checkpoint on validation data
     if checkpoint is None:
         checkpoint = sorted(glob(f"{log_directory}/checkpoints/epoch*"))[-1]
         print(f"Loading: {checkpoint}")
 
-    checkpoint = torch.load(checkpoint, map_location='cpu')
+    checkpoint = torch.load(checkpoint, map_location="cpu")
     checkpoint = checkpoint["state_dict"]
     if fp16:
         checkpoint = tree_map(lambda x: x.half(), checkpoint)
@@ -81,10 +83,10 @@ def load_model(
 
 
 def evaluate_on_test_dataset(
-        model: JetReconstructionModel,
-        progress=progress,
-        return_full_output: bool = False,
-        fp16: bool = False
+    model: JetReconstructionModel,
+    progress=progress,
+    return_full_output: bool = False,
+    fp16: bool = False,
 ) -> Union[Evaluation, Tuple[Evaluation, Outputs]]:
     full_assignments = defaultdict(list)
     full_assignment_probabilities = defaultdict(list)
@@ -97,23 +99,28 @@ def evaluate_on_test_dataset(
 
     dataloader = model.test_dataloader()
     if progress:
-        dataloader = progress.track(model.test_dataloader(), description="Evaluating Model")
+        dataloader = progress.track(
+            model.test_dataloader(), description="Evaluating Model"
+        )
 
     for batch in dataloader:
-        sources = tuple(Source(x[0].to(model.device), x[1].to(model.device)) for x in batch.sources)
+        sources = tuple(
+            Source(x[0].to(model.device), x[1].to(model.device)) for x in batch.sources
+        )
 
         with torch.cuda.amp.autocast(enabled=fp16):
             outputs = model.forward(sources)
 
-        assignment_indices = extract_predictions([
-            np.nan_to_num(assignment.detach().cpu().numpy(), -np.inf)
-            for assignment in outputs.assignments
-        ])
+        assignment_indices = extract_predictions(
+            [
+                np.nan_to_num(assignment.detach().cpu().numpy(), -np.inf)
+                for assignment in outputs.assignments
+            ]
+        )
 
-        detection_probabilities = np.stack([
-            torch.sigmoid(detection).cpu().numpy()
-            for detection in outputs.detections
-        ])
+        detection_probabilities = np.stack(
+            [torch.sigmoid(detection).cpu().numpy() for detection in outputs.detections]
+        )
 
         classifications = {
             key: torch.softmax(classification, 1).cpu().numpy()
@@ -121,8 +128,7 @@ def evaluate_on_test_dataset(
         }
 
         regressions = {
-            key: value.cpu().numpy()
-            for key, value in outputs.regressions.items()
+            key: value.cpu().numpy() for key, value in outputs.regressions.items()
         }
 
         assignment_probabilities = []
@@ -130,11 +136,13 @@ def evaluate_on_test_dataset(
         for assignment_probability, assignment, symmetries in zip(
             outputs.assignments,
             assignment_indices,
-            model.event_info.product_symbolic_groups.values()
+            model.event_info.product_symbolic_groups.values(),
         ):
             # Get the probability of the best assignment.
             # Have to use explicit function call here to construct index dynamically.
-            assignment_probability = assignment_probability.__getitem__((dummy_index, *assignment.T))
+            assignment_probability = assignment_probability.__getitem__(
+                (dummy_index, *assignment.T)
+            )
 
             # Convert from log-probability to probability.
             assignment_probability = torch.exp(assignment_probability)
@@ -164,11 +172,10 @@ def evaluate_on_test_dataset(
         dict_concatenate(full_assignment_probabilities),
         dict_concatenate(full_detection_probabilities),
         dict_concatenate(full_regressions),
-        dict_concatenate(full_classifications)
+        dict_concatenate(full_classifications),
     )
 
     if return_full_output:
         return evaluation, tree_concatenate(full_outputs)
 
     return evaluation
-

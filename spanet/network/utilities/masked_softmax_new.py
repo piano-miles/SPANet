@@ -3,6 +3,7 @@ Adapted from AllenNLP
 https://github.com/allenai/allennlp
 
 """
+
 import torch
 from torch.nn import functional as F
 
@@ -51,10 +52,10 @@ def max_value_of_dtype(dtype: torch.dtype):
 
 
 def masked_softmax(
-        vector: torch.Tensor,
-        mask: torch.BoolTensor,
-        dim: int = -1,
-        memory_efficient: bool = False,
+    vector: torch.Tensor,
+    mask: torch.BoolTensor,
+    dim: int = -1,
+    memory_efficient: bool = False,
 ) -> torch.Tensor:
     """
     `torch.nn.functional.softmax(vector)` does not work if some elements of `vector` should be
@@ -82,7 +83,7 @@ def masked_softmax(
             result = F.softmax(vector * mask, dim=dim)
             result = result * mask
             result = result / (
-                    result.sum(dim=dim, keepdim=True) + tiny_value_of_dtype(result.dtype)
+                result.sum(dim=dim, keepdim=True) + tiny_value_of_dtype(result.dtype)
             )
         else:
             masked_vector = vector.masked_fill(~mask, min_value_of_dtype(vector.dtype))
@@ -90,7 +91,9 @@ def masked_softmax(
     return result
 
 
-def masked_log_softmax(vector: torch.Tensor, mask: torch.BoolTensor, dim: int = -1) -> torch.Tensor:
+def masked_log_softmax(
+    vector: torch.Tensor, mask: torch.BoolTensor, dim: int = -1
+) -> torch.Tensor:
     """
     `torch.nn.functional.log_softmax(vector)` does not work if some elements of `vector` should be
     masked.  This performs a log_softmax on just the non-masked portions of `vector`.  Passing

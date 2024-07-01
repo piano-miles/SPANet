@@ -1,6 +1,20 @@
 from enum import Enum
 from copy import deepcopy
-from typing import NamedTuple, Dict, Union, TypeVar, List, Tuple, Iterable, Set, FrozenSet, OrderedDict, Callable, Mapping, Optional
+from typing import (
+    NamedTuple,
+    Dict,
+    Union,
+    TypeVar,
+    List,
+    Tuple,
+    Iterable,
+    Set,
+    FrozenSet,
+    OrderedDict,
+    Callable,
+    Mapping,
+    Optional,
+)
 
 import sympy.combinatorics
 from numpy.typing import NDArray, ArrayLike, DTypeLike
@@ -31,7 +45,7 @@ class Particles:
         self,
         particles: Tuple[str, ...],
         permutations: Optional[Permutations] = None,
-        sources: Optional[Tuple[int, ...]] = None
+        sources: Optional[Tuple[int, ...]] = None,
     ):
         self.names = particles
         self.permutations = permutations if permutations is not None else []
@@ -64,18 +78,22 @@ InputDict = ODict
 
 
 # Similar to `tree_map` but only recurses over dictionaries so we can have lists of data at each node.
-def feynman_map(function: Callable[[Value], NewValue], tree: FeynmanDict[Key, Value]) -> FeynmanDict[Key, NewValue]:
+def feynman_map(
+    function: Callable[[Value], NewValue], tree: FeynmanDict[Key, Value]
+) -> FeynmanDict[Key, NewValue]:
     return {
-        key: feynman_map(function, value) if isinstance(value, dict) else function(value)
+        key: (
+            feynman_map(function, value) if isinstance(value, dict) else function(value)
+        )
         for key, value in tree.items()
     }
 
 
 def feynman_fill(
-        tree: FeynmanDict[str, Value],
-        event_particles: Particles,
-        daughter_particles: Mapping[str, Particles],
-        constructor: Callable[[], Value]
+    tree: FeynmanDict[str, Value],
+    event_particles: Particles,
+    daughter_particles: Mapping[str, Particles],
+    constructor: Callable[[], Value],
 ):
     tree = deepcopy(tree)
 
@@ -177,5 +195,3 @@ class Evaluation(NamedTuple):
     detection_probabilities: Dict[str, NDArray[np.float32]]
     regressions: Dict[str, NDArray[np.float32]]
     classifications: Dict[str, NDArray[np.float32]]
-
-

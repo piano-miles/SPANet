@@ -7,7 +7,6 @@ from spanet.dataset.types import SpecialKey, Statistics, Source
 from spanet.dataset.inputs.BaseInput import BaseInput
 
 
-
 class SequentialInput(BaseInput):
 
     # noinspection PyAttributeOutsideInit
@@ -15,15 +14,23 @@ class SequentialInput(BaseInput):
         input_group = [SpecialKey.Inputs, self.input_name]
 
         # Load in the mask for this vector input
-        source_mask = torch.from_numpy(self.dataset(hdf5_file, input_group, SpecialKey.Mask)[:]).contiguous()
+        source_mask = torch.from_numpy(
+            self.dataset(hdf5_file, input_group, SpecialKey.Mask)[:]
+        ).contiguous()
 
         # Load in vector features into a pre-made buffer
         num_jets = source_mask.shape[1]
         num_features = self.event_info.num_features(self.input_name)
-        source_data = torch.empty(num_features, self.num_events, num_jets, dtype=torch.float32)
+        source_data = torch.empty(
+            num_features, self.num_events, num_jets, dtype=torch.float32
+        )
 
-        for index, (feature, _, log_transform) in enumerate(self.event_info.input_features[self.input_name]):
-            self.dataset(hdf5_file, input_group, feature).read_direct(source_data[index].numpy())
+        for index, (feature, _, log_transform) in enumerate(
+            self.event_info.input_features[self.input_name]
+        ):
+            self.dataset(hdf5_file, input_group, feature).read_direct(
+                source_data[index].numpy()
+            )
             if log_transform:
                 # torch.clamp_(source_data[index], min=1e-6)
                 source_data[index] += 1

@@ -5,16 +5,24 @@ from spanet.network.layers.linear_block import create_linear_block
 
 
 class LinearStack(nn.Module):
-    def __init__(self, options: Options, num_layers: int, hidden_dim: int, skip_connection: bool = True):
+    def __init__(
+        self,
+        options: Options,
+        num_layers: int,
+        hidden_dim: int,
+        skip_connection: bool = True,
+    ):
         super(LinearStack, self).__init__()
 
-        self.layers = nn.ModuleList([
-            create_linear_block(options, hidden_dim, hidden_dim, skip_connection)
-            for _ in range(num_layers)
-        ])
+        self.layers = nn.ModuleList(
+            [
+                create_linear_block(options, hidden_dim, hidden_dim, skip_connection)
+                for _ in range(num_layers)
+            ]
+        )
 
     def forward(self, x: Tensor, sequence_mask: Tensor) -> Tensor:
-        """ A stack of identically structured linear blocks in sequential order.
+        """A stack of identically structured linear blocks in sequential order.
 
         Parameters
         ----------
@@ -43,10 +51,7 @@ class LinearIdentity(nn.Module):
 
 
 def create_linear_stack(
-        options: Options,
-        num_layers: int,
-        hidden_dim: int,
-        skip_connection: bool = False
+    options: Options, num_layers: int, hidden_dim: int, skip_connection: bool = False
 ):
     if num_layers > 0:
         return LinearStack(options, num_layers, hidden_dim, skip_connection)

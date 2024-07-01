@@ -7,10 +7,10 @@ from torch import Tensor
 @torch.jit.script
 def contract_4d(weights: Tensor, x: Tensor) -> Tensor:
     factor = torch.sqrt(weights.shape[0])
-    y = torch.einsum('ijkl,bxi->jklbx', weights, x) / factor
-    y = torch.einsum('jklbx,byj->klbxy', y, x) / factor
-    y = torch.einsum('klbxy,bzk->lbxyz', y, x) / factor
-    y = torch.einsum('lbxyz,bwl->bxyzw', y, x) / factor
+    y = torch.einsum("ijkl,bxi->jklbx", weights, x) / factor
+    y = torch.einsum("jklbx,byj->klbxy", y, x) / factor
+    y = torch.einsum("klbxy,bzk->lbxyz", y, x) / factor
+    y = torch.einsum("lbxyz,bwl->bxyzw", y, x) / factor
 
     return y
 
@@ -18,24 +18,24 @@ def contract_4d(weights: Tensor, x: Tensor) -> Tensor:
 @torch.jit.script
 def contract_3d(weights: Tensor, x: Tensor) -> Tensor:
     factor = torch.sqrt(weights.shape[0])
-    y = torch.einsum('ijk,bxi->jkbx', weights, x) / factor
-    y = torch.einsum('jkbx,byj->kbxy', y, x) / factor
-    y = torch.einsum('kbxy,bzk->bxyz', y, x) / factor
+    y = torch.einsum("ijk,bxi->jkbx", weights, x) / factor
+    y = torch.einsum("jkbx,byj->kbxy", y, x) / factor
+    y = torch.einsum("kbxy,bzk->bxyz", y, x) / factor
     return y
 
 
 @torch.jit.script
 def contract_2d(weights: Tensor, x: Tensor) -> Tensor:
     factor = torch.sqrt(weights.shape[0])
-    y = torch.einsum('ij,bxi->jbx', weights, x) / factor
-    y = torch.einsum('jbx,byj->bxy', y, x) / factor
+    y = torch.einsum("ij,bxi->jbx", weights, x) / factor
+    y = torch.einsum("jbx,byj->bxy", y, x) / factor
     return y
 
 
 @torch.jit.script
 def contract_1d(weights: Tensor, x: Tensor) -> Tensor:
     factor = torch.sqrt(weights.shape[0])
-    y = torch.einsum('i,bxi->bx', weights, x) / factor
+    y = torch.einsum("i,bxi->bx", weights, x) / factor
     return y
 
 
@@ -65,14 +65,12 @@ def symmetric_tensor(weights: Tensor, permutation_group: List[List[int]]):
 # This is necessary for onnx export since it currently does not
 # support tensor.permute with non-constant arguments.
 def create_symmetric_function(permutation_group: List[List[int]]):
-    code = [
-        "def symmetrize_tensor(weights):",
-        "    symmetric_weights = weights"
-        "    "
-    ]
+    code = ["def symmetrize_tensor(weights):", "    symmetric_weights = weights" "    "]
 
     for sigma in permutation_group:
-        code.append(f"    symmetric_weights = symmetric_weights + weights.permute({','.join(map(str, sigma))})")
+        code.append(
+            f"    symmetric_weights = symmetric_weights + weights.permute({','.join(map(str, sigma))})"
+        )
 
     code.append(f"    return symmetric_weights / {len(permutation_group) + 1}")
     code = "\n".join(code)
