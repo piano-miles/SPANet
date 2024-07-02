@@ -71,7 +71,7 @@ python -m spanet.test ./spanet_output/version_0 -tf data/full_hadronic_ttbar/exa
 python -m spanet.test ./spanet_output/version_0 -tf data/full_hadronic_ttbar/testing.h5 --gpu
 ```
 
-Next, we will output all SPANet predictions on a set of events in order to analyze them further, simply run `predict.py` as follows.
+Next, we will output all SPANet predictions on a set of events in order to analyze them further. To do this, simply run `predict.py` as follows.
 
 ```bash
 # Example Dataset
