@@ -36,7 +36,7 @@ Custom keys which may modified for your event will be in `lower_case_with_unders
 ------- decay_product_1 : [NUM_EVENTS, ]   : int or long
 ------- decay_product_2 : [NUM_EVENTS, ]   : int or long
 ------- ...
-        
+
 ---- event_particle_2:
 ------- decay_product_1 : [NUM_EVENTS, ]   : int or long
 ------- decay_product_2 : [NUM_EVENTS, ]   : int or long
@@ -117,9 +117,9 @@ INPUTS:
     SEQUENTIAL:
         Jets:
             ...
-            
+
         Leptons:
-            ...        
+            ...
 
 EVENT:
     event_particle:
