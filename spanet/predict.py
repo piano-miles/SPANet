@@ -1,11 +1,11 @@
 from argparse import ArgumentParser
 from typing import Optional
-from numpy import ndarray as Array  # NOTE: Unused?
 
 import h5py
+from numpy import ndarray as Array  # NOTE: Unused?
 
 from spanet.dataset.jet_reconstruction_dataset import JetReconstructionDataset
-from spanet.dataset.types import Evaluation, SpecialKey, Outputs
+from spanet.dataset.types import Evaluation, Outputs, SpecialKey
 from spanet.evaluation import evaluate_on_test_dataset, load_model
 
 

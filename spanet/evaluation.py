@@ -1,19 +1,17 @@
+from collections import defaultdict
 from glob import glob
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import torch
-from torch.utils._pytree import tree_flatten, tree_unflatten, tree_map
-
 from rich import progress
+from torch.utils._pytree import tree_flatten, tree_map, tree_unflatten
 
 from spanet import JetReconstructionModel, Options
 from spanet.dataset.types import Evaluation, Outputs, Source
 from spanet.network.jet_reconstruction.jet_reconstruction_network import (
     extract_predictions,
 )
-
-from collections import defaultdict
 
 
 def dict_concatenate(tree):
